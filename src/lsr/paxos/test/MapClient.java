@@ -62,7 +62,7 @@ public class MapClient {
         System.out.println("<key> <value>");
     }
 
-    public static void main(String[] args) throws IOException, ReplicationException {
+    public static void main(String[] args) throws IOException, ReplicationException, InterruptedException {
         instructions();
         MapClient client = new MapClient();
         client.run();
