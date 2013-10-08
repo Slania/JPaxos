@@ -47,14 +47,13 @@ public class MapClient {
             long start = System.currentTimeMillis();
             byte[] response = client.execute(command.toByteArray());
             long finish = System.currentTimeMillis();
-            average += finish - start;
+            System.out.println("Run took: " + (finish - start) + "ms");
             ByteBuffer buffer = ByteBuffer.wrap(response);
             Long previousValue = buffer.getLong();
             System.out.println(String.format("Previous value for %d was %d", key, previousValue));
             System.out.println("Sleeping 10s, kill stuff or bring it back up!");
             Thread.sleep(10000);
         }
-        System.out.println("Average of 10 runs: " + average/count);
     }
 
     private static void instructions() {
