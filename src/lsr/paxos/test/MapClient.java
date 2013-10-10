@@ -14,34 +14,29 @@ public class MapClient {
     public void run() throws IOException, ReplicationException, InterruptedException {
         client = new Client();
         client.connect();
-        long average = 0, count = 0;
         BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
-        for (int i = 1; i <= 10; i++){
-            count++;
+        for (;;){
             String line;
 
-//            line = reader.readLine();
-//
-//            if (line == null) {
-//                break;
-//            }
-//
-//            String[] args = line.trim().split(" ");
-//
-//            if (args[0].equals("bye")) {
-//                System.exit(0);
-//            }
-//
-//            if (args.length != 2) {
-//                instructions();
-//                continue;
-//            }
+            line = reader.readLine();
 
-//            Long key = Long.parseLong(args[0]);
-//            Long value = Long.parseLong(args[1]);
+            if (line == null) {
+                break;
+            }
 
-            Long key = (long) i;
-            Long value = (long) Math.pow(i,2);
+            String[] args = line.trim().split(" ");
+
+            if (args[0].equals("bye")) {
+                System.exit(0);
+            }
+
+            if (args.length != 2) {
+                instructions();
+                continue;
+            }
+
+            Long key = Long.parseLong(args[0]);
+            Long value = Long.parseLong(args[1]);
 
             MapServiceCommand command = new MapServiceCommand(key, value);
             long start = System.currentTimeMillis();
@@ -51,8 +46,6 @@ public class MapClient {
             ByteBuffer buffer = ByteBuffer.wrap(response);
             Long previousValue = buffer.getLong();
             System.out.println(String.format("Previous value for %d was %d", key, previousValue));
-            System.out.println("Sleeping 10s, kill stuff or bring it back up!");
-            Thread.sleep(10000);
         }
     }
 

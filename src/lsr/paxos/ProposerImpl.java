@@ -329,7 +329,8 @@ public class ProposerImpl implements Proposer {
     throws InterruptedException 
     {
         // Called from batcher thread        
-        Proposal proposal = new Proposal(requests, value);        
+        Proposal proposal = new Proposal(requests, value);
+        logger.info("******** in enqueueProposal method at time: " + System.currentTimeMillis() + " ********");
         if (logger.isLoggable(Level.FINE)) {
             logger.fine("pendingProposals.size() = " + pendingProposals.size() + ", MAX: " + MAX_QUEUED_PROPOSALS);
         }
@@ -394,6 +395,7 @@ public class ProposerImpl implements Proposer {
      */
     public void propose(ClientBatch[] requests, byte[] value) {
         assert paxos.getDispatcher().amIInDispatcher();
+        logger.info("******** in propose method at time: " + System.currentTimeMillis() + " ********");
         if (state != ProposerState.PREPARED) {
             // This can happen if there is a Propose event queued on the Dispatcher when 
             // the view changes.
@@ -443,7 +445,7 @@ public class ProposerImpl implements Proposer {
      */
     public void ballotFinished() {
         assert paxos.getDispatcher().amIInDispatcher();
-
+        logger.info("******** in ballotFinished method at time: " + System.currentTimeMillis() + " ********");
         // There's a space on the window.
         // Try sending the current batch
 

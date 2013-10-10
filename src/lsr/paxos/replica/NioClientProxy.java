@@ -57,12 +57,14 @@ public class NioClientProxy {
         if (!initialized) {
             throw new IllegalStateException("Connection not initialized yet");
         }
+        logger.info("******** in method send, sending client reply at time: " + System.currentTimeMillis() + " ********");
         readerAndWriter.send(clientReply.toByteArray());
     }
 
     /** executes command from byte buffer 
      * @throws InterruptedException */
     private void execute(ByteBuffer buffer) throws InterruptedException {
+        logger.info("******** in execute method in client proxy at time: " + System.currentTimeMillis() + " ********");
         ClientCommand command = new ClientCommand(buffer);
         requestManager.onClientRequest(command, this);
     }

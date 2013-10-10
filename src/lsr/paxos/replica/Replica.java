@@ -264,6 +264,7 @@ public class Replica {
      */
     private void innerExecuteClientBatch(int instance, ClientBatchInfo bInfo) {
         assert dispatcher.amIInDispatcher() : "Wrong thread: " + Thread.currentThread().getName();
+        logger.info("******** in innerExecuteClientBatch method at time: " + System.currentTimeMillis() + " ********");
 
         if (logger.isLoggable(Level.FINE)) {
             logger.fine("Executing batch " + bInfo + ", instance number " + instance) ;

@@ -106,6 +106,8 @@ final public class ClientRequestManager {
                             logger.fine("Received: " + request);
                         }
 
+                        logger.info("******** new client request in onClientRequest method at time: " + System.currentTimeMillis() + " ********");
+
                         // Store the ClientProxy associated with the request. 
                         // Used to send the answer back to the client
                         // Must be stored before proposed, otherwise the reply might be ready
@@ -167,6 +169,7 @@ final public class ClientRequestManager {
             //                logger.fine("Client proxy not found, discarding reply. " + request.getRequestId());
             //            }
         } else {
+            logger.info("******** in onRequestExecuted at: " + System.currentTimeMillis() + " ********");
 //            if (logger.isLoggable(Level.FINE)) 
             logger.fine("Enqueueing reply " + reply.getRequestId());
             // Release the permit while still on the Replica thread. This will release 

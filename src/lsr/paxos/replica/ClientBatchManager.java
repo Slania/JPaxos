@@ -223,6 +223,7 @@ final public class ClientBatchManager implements MessageHandler, DecideCallback 
 
     private void executeRequests() {
         assert cliBManagerDispatcher.amIInDispatcher() : "Not in replica dispatcher. " + Thread.currentThread().getName();
+        logger.info("******** in executeRequests method at time: " + System.currentTimeMillis() + " ********");
 
         if (decidedWaitingExecution.size() > 100) {
             logger.warning("decidedWaitingExecution.size: " + decidedWaitingExecution.size()+ ", nextInstance: " + nextInstance + 
@@ -304,7 +305,7 @@ final public class ClientBatchManager implements MessageHandler, DecideCallback 
         if (logger.isLoggable(Level.INFO)) {
             logger.info("Instance: " + instance + ": " + batch.toString());
         }
-
+        logger.info("******** in innerOnBatchOrdered method after instance has been decided at time: " + System.currentTimeMillis() + " ********");
         // Update the batch store, mark all client batches inside this Paxos batch as decided.
         for (ClientBatch cBatch : batch) {
             ClientBatchID bid = cBatch.getBatchId();

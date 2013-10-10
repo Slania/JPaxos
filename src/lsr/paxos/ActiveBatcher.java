@@ -224,6 +224,7 @@ public class ActiveBatcher implements Runnable {
                     logger.fine("Batch ready. Number of requests: " + requests.length + ", queued reqs: " + queue.size());
                 }
                 // Can block if the Proposer internal propose queue is full
+                logger.info("******** dispatching request in Batcher#run method at time: " + System.currentTimeMillis() + " ********");
                 proposer.enqueueProposal(requests, value);
                 if (logger.isLoggable(Level.FINE)) {                    
                     logger.fine("Batch dispatched.");

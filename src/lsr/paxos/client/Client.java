@@ -165,12 +165,12 @@ public class Client {
                 bb.flip();
                 output.write(bb.array());
                 output.flush();
-
+                logger.info("******** request sent at time: " + System.currentTimeMillis() + " ********");
                 // Blocks only for Socket.SO_TIMEOUT
                 stats.requestSent(request.getRequestId());
-
+                logger.info("******** waiting for reply at time: " + System.currentTimeMillis() + " ********");
                 ClientReply clientReply = new ClientReply(input);
-
+                logger.info("******** got reply at time: " + System.currentTimeMillis() + " ********");
 
                 switch (clientReply.getResult()) {
                     case OK:

@@ -13,9 +13,11 @@ import java.util.logging.Logger;
 import lsr.service.SimplifiedService;
 
 public class SimplifiedMapService extends SimplifiedService {
+
     private HashMap<Long, Long> map = new HashMap<Long, Long>();
 
     protected byte[] execute(byte[] value) {
+        logger.info("******** in execute method of SimplifiedMapService at time: " + System.currentTimeMillis() + " ********");
         MapServiceCommand command;
         try {
             command = new MapServiceCommand(value);

@@ -201,6 +201,7 @@ public class Paxos implements FailureDetector.FailureDetectorListener {
      */
     public boolean enqueueRequest(ClientBatch request) {
         // called by one of the Selector threads.
+        logger.info("******** in enqueueRequest method at time: " + System.currentTimeMillis() + " ********");
         return activeBatcher.enqueueClientRequest(request);
     }
 
@@ -247,6 +248,7 @@ public class Paxos implements FailureDetector.FailureDetectorListener {
      */
     public void decide(int instanceId) {
         assert dispatcher.amIInDispatcher() : "Incorrect thread: " + Thread.currentThread();
+        logger.info("******** in Paxos#decide method at time: " + System.currentTimeMillis() + " ********");
 
         ConsensusInstance ci = storage.getLog().getInstance(instanceId);
         assert ci != null : "Deciding on instance already removed from logs";

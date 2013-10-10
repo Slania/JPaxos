@@ -52,7 +52,7 @@ class Acceptor {
     public void onPrepare(Prepare msg, int sender) {
         assert paxos.getDispatcher().amIInDispatcher() : "Thread should not be here: " +
                 Thread.currentThread();
-
+        logger.info("******** in onPrepare method, promising not to accept older proposals: " + System.currentTimeMillis() + " ********");
         // TODO:
         // If the message is from the current view:
         // a) This process already received a proposal from this view ->
@@ -109,7 +109,7 @@ class Acceptor {
         assert message.getView() == storage.getView() : 
             "Msg.view: " + message.getView() + ", view: " + storage.getView();
         assert paxos.getDispatcher().amIInDispatcher();
-        
+        logger.info("******** in onPropose method accepting a proposal at time: " + System.currentTimeMillis() + " ********");
         ConsensusInstance instance = storage.getLog().getInstance(message.getInstanceId());
         // The propose is so old, that it's log has already been erased
         if (instance == null) {

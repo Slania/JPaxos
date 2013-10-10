@@ -137,12 +137,13 @@ public class NioClientManager implements AcceptHandler {
             throw new RuntimeException(e);
         }
         selectorThreads[0].addChannelInterest(serverSocketChannel, SelectionKey.OP_ACCEPT);
-
+        logger.info("******** in handleAccept method at time: " + System.currentTimeMillis() + " ********");
         // if accepting was successful create new client proxy
         if (socketChannel != null) {
             try {
                 SelectorThread selectorThread = getNextThread();
                 ReaderAndWriter raw = new ReaderAndWriter(socketChannel, selectorThread);
+                logger.info("******** spinning up new client proxy at time: " + System.currentTimeMillis() + " ********");
                 new NioClientProxy(raw, requestManager, idGenerator);
                 if (logger.isLoggable(Level.FINE)) {
                     logger.fine("Connection from " + socketChannel.socket().getInetAddress());
