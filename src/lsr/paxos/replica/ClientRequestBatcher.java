@@ -98,6 +98,7 @@ public class ClientRequestBatcher implements Runnable {
                 //                        logger.fine("Waiting for " + timeToExpire);
                 //                    }
                 request = cBatcherQueue.poll(timeToExpire, TimeUnit.MILLISECONDS);
+                logger.info("******** in run method of ClientRequestBatcher, polled and got request finally at time: " + System.currentTimeMillis() + " ********");
             } catch (InterruptedException e) {
                 logger.warning("Thread interrupted. Quitting.");
                 return;
