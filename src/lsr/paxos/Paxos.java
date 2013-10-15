@@ -350,6 +350,7 @@ public class Paxos implements FailureDetector.FailureDetectorListener {
             if (logger.isLoggable(Level.FINE)) {
                 logger.fine("Msg rcv: " + msg);
             }
+            logger.info("******** in onMessageReceived, received: " + msg + "at time: " + System.currentTimeMillis() + " ********");
             MessageEvent event = new MessageEvent(msg, sender);
             dispatcher.submit(event);
         }

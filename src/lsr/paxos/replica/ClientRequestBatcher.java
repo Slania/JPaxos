@@ -85,7 +85,7 @@ public class ClientRequestBatcher implements Runnable {
     @Override
     public void run() {
         long batchStart = -1;
-
+        logger.info("******** in run method of ClientRequestBatcher at time: " + System.currentTimeMillis() + " ********");
         while (true) {
             ClientRequest request;
             try {
@@ -140,6 +140,7 @@ public class ClientRequestBatcher implements Runnable {
 
     private void sendBatch() {
         assert sizeInBytes > 0 : "Trying to send an empty batch.";
+        logger.info("******** in sendBatch method of ClientRequestBatcher at time: " + System.currentTimeMillis() + " ********");
 
         // The batch id is composed of (replicaId, localSeqNumber)
         final ClientBatchID bid = new ClientBatchID(localId, sequencer.getAndIncrement());
