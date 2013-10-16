@@ -89,6 +89,7 @@ public class ClientRequestBatcher implements Runnable {
         while (true) {
             ClientRequest request;
             try {
+                logger.info("******** in run method of ClientRequestBatcher, sizeInBytes is: " + sizeInBytes + "forwardMaxBatchDelay is: " + forwardMaxBatchDelay + "at time: " + System.currentTimeMillis() + " ********");
                 // If there are no requests waiting to be batched, wait forever for the next request.
                 // Otherwise, wait for the remaining of the timeout
                 int timeToExpire = (sizeInBytes == 0) ? 
@@ -97,6 +98,7 @@ public class ClientRequestBatcher implements Runnable {
                 //                    if (logger.isLoggable(Level.FINE)) {
                 //                        logger.fine("Waiting for " + timeToExpire);
                 //                    }
+                logger.info("******** in run method of ClientRequestBatcher, timeToExpire is: " + timeToExpire + "at time: " + System.currentTimeMillis() + " ********");
                 request = cBatcherQueue.poll(timeToExpire, TimeUnit.MILLISECONDS);
                 logger.info("******** in run method of ClientRequestBatcher, polled and got request finally at time: " + System.currentTimeMillis() + " ********");
             } catch (InterruptedException e) {
