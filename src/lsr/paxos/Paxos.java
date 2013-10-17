@@ -263,6 +263,7 @@ public class Paxos implements FailureDetector.FailureDetectorListener {
         storage.updateFirstUncommitted();
 
         if (isLeader()) {
+            logger.info("******** in Paxos#decide, stopping proposals at time: " + System.currentTimeMillis() + " ********");
             proposer.stopPropose(instanceId);
 //            activeBatcher.onInstanceDecided();
             proposer.ballotFinished();
@@ -350,7 +351,9 @@ public class Paxos implements FailureDetector.FailureDetectorListener {
             if (logger.isLoggable(Level.FINE)) {
                 logger.fine("Msg rcv: " + msg);
             }
-            logger.info("******** in onMessageReceived, received: " + msg + "at time: " + System.currentTimeMillis() + " ********");
+            if (!(msg instanceof Alive)) {
+                logger.info("******** in Paxos#onMessageReceived, received: " + msg + "at time: " + System.currentTimeMillis() + " ********");
+            }
             MessageEvent event = new MessageEvent(msg, sender);
             dispatcher.submit(event);
         }
@@ -370,6 +373,7 @@ public class Paxos implements FailureDetector.FailureDetectorListener {
         }
 
         public void run() {
+            logger.info("******** in Paxos#run method at time: " + System.currentTimeMillis() + " ********");
             try {
                 // The monolithic implementation of Paxos does not need Nack
                 // messages because the Alive messages from the failure detector

@@ -156,6 +156,7 @@ class Acceptor {
              * same pair of view and instance.
              */
             // Do not send ACCEPT to self
+            logger.info("******** re-sending proposal to other at time: " + System.currentTimeMillis() + " ********");
             network.sendToOthers(new Accept(message));
             //            }
         }
@@ -171,7 +172,9 @@ class Acceptor {
             instance.getAccepts().set(descriptor.localId);
             // The propose message works as an implicit accept from the leader.
             instance.getAccepts().set(sender);
+            logger.info("******** in onPropose method trying to decide at time: " + System.currentTimeMillis() + " ********");
             if (instance.isMajority(descriptor.numReplicas)) {
+                logger.info("******** in onPropose method deciding at time: " + System.currentTimeMillis() + " ********");
                 paxos.decide(instance.getId());
             }
         }

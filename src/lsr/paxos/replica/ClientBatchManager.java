@@ -98,6 +98,7 @@ final public class ClientBatchManager implements MessageHandler, DecideCallback 
     /* Handler for forwarded requests */
     @Override
     public void onMessageReceived(final Message msg, final int sender) {
+        logger.info("******** in ClientBatchManager#onMessageReceived at: " + System.currentTimeMillis() + " ********");
         // Called by a TCP Sender         
         cliBManagerDispatcher.submit(new Runnable() {
             @Override
@@ -139,7 +140,7 @@ final public class ClientBatchManager implements MessageHandler, DecideCallback 
     {
         assert cliBManagerDispatcher.amIInDispatcher() :
             "Not in ClientBatchManager dispatcher. " + Thread.currentThread().getName();
-
+        logger.info("******** in onForwardClientBatch at time: " + System.currentTimeMillis() + " ********");
         ClientRequest[] requests = fReq.requests;
         ClientBatchID rid = fReq.rid;
 
@@ -213,9 +214,10 @@ final public class ClientBatchManager implements MessageHandler, DecideCallback 
         }
 
         markAcknowledged(ackVector);
-
+        logger.info("******** in sendNextBatch method at time: " + System.currentTimeMillis() + " ********");
         // Send to all
         network.sendToOthers(fReqMsg);
+        logger.info("******** batch sent to everyone at time: " + System.currentTimeMillis() + " ********");
         // Local delivery
         onForwardClientBatch(fReqMsg, localId);
     }

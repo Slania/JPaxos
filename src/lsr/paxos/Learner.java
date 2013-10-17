@@ -40,6 +40,7 @@ class Learner {
      * @see Accept
      */
     public void onAccept(Accept message, int sender) {
+        logger.info("******** in onAccept method at time: " + System.currentTimeMillis() + " ********");
         assert message.getView() == storage.getView() : "Msg.view: " + message.getView() +
                                                         ", view: " + storage.getView();
         assert paxos.getDispatcher().amIInDispatcher() : "Thread should not be here: " +
@@ -89,15 +90,16 @@ class Learner {
         }
 
         if (paxos.isLeader()) {
+            logger.info("******** in onAccept method stopping propose at time: " + System.currentTimeMillis() + " ********");
             proposer.stopPropose(instance.getId(), sender);
         }
-
         if (instance.isMajority(ProcessDescriptor.getInstance().numReplicas)) {
             if (instance.getValue() == null) {
                 if (logger.isLoggable(Level.FINE)) {
                     logger.fine("Majority but no value. Delaying deciding. Instance: " + instance.getId());
                 }
             } else {
+                logger.info("******** in onAccept method trying to decide at time: " + System.currentTimeMillis() + " ********");
                 paxos.decide(instance.getId());
             }
         }
