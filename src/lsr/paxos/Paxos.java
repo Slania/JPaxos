@@ -373,7 +373,9 @@ public class Paxos implements FailureDetector.FailureDetectorListener {
         }
 
         public void run() {
-            logger.info("******** in Paxos#run method at time: " + System.currentTimeMillis() + " ********");
+            if (msg instanceof Propose || msg instanceof Accept) {
+                logger.info("******** in Paxos#run method at time: " + System.currentTimeMillis() + " ********");
+            }
             try {
                 // The monolithic implementation of Paxos does not need Nack
                 // messages because the Alive messages from the failure detector
