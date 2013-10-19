@@ -52,7 +52,7 @@ class Acceptor {
     public void onPrepare(Prepare msg, int sender) {
         assert paxos.getDispatcher().amIInDispatcher() : "Thread should not be here: " +
                 Thread.currentThread();
-        logger.info("******** in onPrepare method, promising not to accept older proposals: " + System.currentTimeMillis() + " ********");
+        logger.info("******** in onPrepare method at time: " + System.currentTimeMillis() + " ********");
         // TODO:
         // If the message is from the current view:
         // a) This process already received a proposal from this view ->
@@ -91,6 +91,7 @@ class Acceptor {
         /* TODO: FullSS. Sync view number. 
          * Promise not to accept a phase 1a message for view v.
          */
+        logger.info("******** promising not to accept older proposals at time: " + System.currentTimeMillis() + " ********");
         PrepareOK m = new PrepareOK(msg.getView(), v, storage.getEpoch());
         if (logger.isLoggable(Level.WARNING)) {
             logger.warning("Sending " + m);

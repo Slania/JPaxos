@@ -185,7 +185,8 @@ public class Paxos implements FailureDetector.FailureDetectorListener {
         proposer.start();
         failureDetector.start(storage.getView());
         dispatcher.start();
-        
+
+        logger.info("******** in startPaxos method at time: " + System.currentTimeMillis() + " ********");
         suspect(0);
     }
 
@@ -208,7 +209,8 @@ public class Paxos implements FailureDetector.FailureDetectorListener {
     public void startProposer() {
         assert dispatcher.amIInDispatcher() : "Incorrect thread: " + Thread.currentThread();
         assert proposer.getState() == ProposerState.INACTIVE : "Already in proposer role.";
-        
+
+        logger.info("******** in startProposer method at time: " + System.currentTimeMillis() + " ********");
         proposer.prepareNextView();
     }
 
@@ -323,6 +325,7 @@ public class Paxos implements FailureDetector.FailureDetectorListener {
 
     @Override
     public void suspect(final int view) {
+        logger.info("******** in Paxos#suspect method at time: " + System.currentTimeMillis() + " suspecting process " + pd.getLeaderOfView(view)+ " as leader of view " +  view + "********");
         logger.warning("Suspecting " + pd.getLeaderOfView(view) + " on view " + view);
         // Called by the Failure detector thread. Dispatch to the protocol thread
         dispatcher.submit(new Runnable() {

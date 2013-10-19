@@ -90,17 +90,20 @@ final class PassiveFailureDetector implements FailureDetector {
      */
     @Override
     public synchronized void viewChange(int newView) {
+        logger.info("******** in viewChange method at time: " + System.currentTimeMillis() + " ********");
         assert dispatcher.amIInDispatcher();
         resetTimerTask();
     }
     
     private void scheduleTask() {
         assert task == null : "Task should be null. Instead: " + task;
-
+        logger.info("******** in scheduleTask method at time: " + System.currentTimeMillis() + " ********");
         // Sending alive messages takes precedence over other messages
         if (paxos.isLeader()) {
+            logger.info("******** starting heartbeat at time: " + System.currentTimeMillis() + " ********");
             task = dispatcher.scheduleAtFixedRate(new SendTask(), 0, sendTimeout, TimeUnit.MILLISECONDS);
         } else {
+            logger.info("******** starting suspect at time: " + System.currentTimeMillis() + " ********");
             task = dispatcher.schedule(new SuspectTask(), suspectTimeout, TimeUnit.MILLISECONDS);
         }
     }

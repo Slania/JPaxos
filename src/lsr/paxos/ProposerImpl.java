@@ -127,7 +127,7 @@ public class ProposerImpl implements Proposer {
     public void prepareNextView() {
         assert paxos.getDispatcher().amIInDispatcher();
         assert state == ProposerState.INACTIVE : "Proposer is ACTIVE.";
-
+        logger.info("******** in prepareNextView method at time: " + System.currentTimeMillis() + " ********");
         state = ProposerState.PREPARING;
         setNextViewNumber();
         failureDetector.viewChange(paxos.getLeaderId());
@@ -139,10 +139,12 @@ public class ProposerImpl implements Proposer {
     }
 
     private void setNextViewNumber() {
+        logger.info("******** in setNextView method at time: " + System.currentTimeMillis() + " ********");
         int view = storage.getView();
         do {
             view++;
         } while (view % ProcessDescriptor.getInstance().numReplicas != ProcessDescriptor.getInstance().localId);
+        logger.info("******** view set to: " + view + " ********");
         storage.setView(view);
     }
 
@@ -153,6 +155,7 @@ public class ProposerImpl implements Proposer {
      * @throws InterruptedException
      */
     public void onPrepareOK(PrepareOK message, int sender) {
+        logger.info("******** in onPrepareOK method, got a consent at time: " + System.currentTimeMillis() + " ********");
         assert paxos.getDispatcher().amIInDispatcher();
         assert paxos.isLeader();
         assert state != ProposerState.INACTIVE : "Proposer is not active.";
@@ -180,11 +183,13 @@ public class ProposerImpl implements Proposer {
         prepareRetransmitter.update(message, sender);
 
         if (prepareRetransmitter.isMajority()) {
+            logger.info("******** have majority for view! stopping Prepares at time: " + System.currentTimeMillis() + " ********");
             stopPreparingStartProposing();
         }
     }
 
     private void stopPreparingStartProposing() {
+        logger.info("******** in stopPreparingStartProposing method at time: " + System.currentTimeMillis() + " ********");
         prepareRetransmitter.stop();
         state = ProposerState.PREPARED;
 
