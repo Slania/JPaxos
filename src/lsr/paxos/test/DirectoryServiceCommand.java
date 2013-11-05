@@ -60,7 +60,7 @@ public class DirectoryServiceCommand implements Serializable {
         System.out.println("Size of old replica list: " + oldReplicaSet.size());
         if (newReplicaSetSize > 0){
             for (int i = 1; i <= newReplicaSetSize; i++){
-                oldReplicaSet.add(dataInput.readInt());
+                newReplicaSet.add(dataInput.readInt());
             }
         }
         System.out.println("Size of new replica list: " + newReplicaSet.size());
