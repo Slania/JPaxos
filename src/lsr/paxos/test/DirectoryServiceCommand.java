@@ -18,15 +18,16 @@ public class DirectoryServiceCommand implements Serializable {
         INSERT, DELETE, READ, UPDATE
     }
 
-    public DirectoryServiceCommand(DirectoryCommand directoryCommand, Long value, List<Integer> oldReplicaSet, List<Integer> newReplicaSet, DirectoryCommandType directoryCommandType) {
+    public DirectoryServiceCommand(DirectoryCommand directoryCommand, List<Integer> oldReplicaSet, List<Integer> newReplicaSet, DirectoryCommandType directoryCommandType) {
         this.directoryCommand = directoryCommand;
         this.oldReplicaSet = oldReplicaSet;
         this.newReplicaSet = newReplicaSet;
         this.directoryCommandType = directoryCommandType;
     }
 
-    public DirectoryServiceCommand(byte[] bytes, DirectoryCommand directoryCommand, List<Integer> oldReplicaSet, List<Integer> newReplicaSet, DirectoryCommandType directoryCommandType) throws IOException {
-        this.directoryCommand = directoryCommand;
+    public DirectoryServiceCommand(byte[] bytes) throws IOException {
+        DataInputStream dataInput = new DataInputStream(new ByteArrayInputStream(bytes));
+        this.directoryCommandType = DirectoryCommandType.values()[dataInput.readInt()];
         this.oldReplicaSet = oldReplicaSet;
         this.newReplicaSet = newReplicaSet;
         this.directoryCommandType = directoryCommandType;
@@ -34,7 +35,20 @@ public class DirectoryServiceCommand implements Serializable {
     }
 
     public byte[] toByteArray() {
-        ByteBuffer buffer = ByteBuffer.allocate(16);
+        //4 for the ordinal of the CommandType
+        int numOfBytes = 4 + (oldReplicaSet.size() * (Integer.SIZE / Byte.SIZE)) + (newReplicaSet.size() * (Integer.SIZE / Byte.SIZE));
+        //4 + 4 for the sizes of the 2 lists
+        numOfBytes += 4 + 4;
+        ByteBuffer buffer = ByteBuffer.allocate(numOfBytes);
+        buffer.putInt(directoryCommandType.ordinal());
+        buffer.putInt(oldReplicaSet.size());
+        buffer.putInt(newReplicaSet.size());
+        for (Integer integer : oldReplicaSet) {
+            buffer.putInt(integer);
+        }
+        for (Integer integer : newReplicaSet) {
+            buffer.putInt(integer);
+        }
         return buffer.array();
     }
 
