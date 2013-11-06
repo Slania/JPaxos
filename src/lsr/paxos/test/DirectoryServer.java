@@ -16,7 +16,7 @@ public class DirectoryServer {
         int localId = Integer.parseInt(args[0]);
         Configuration process = new Configuration();
 
-        Replica replica = new Replica(process, localId, new SimplifiedMapService());
+        Replica replica = new Replica(process, localId, new DirectoryService());
 
         replica.start();
         System.in.read();
