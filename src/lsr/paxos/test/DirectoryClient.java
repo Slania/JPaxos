@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class DirectoryClient {
@@ -61,6 +62,7 @@ public class DirectoryClient {
             }
 
             DirectoryServiceCommand command = new DirectoryServiceCommand(oldReplicaSet, newReplicaSet, operation, objectId);
+            System.out.println("Sending command: " + command.toString());
             long start = System.currentTimeMillis();
             byte[] response = client.execute(command.toByteArray());
             long finish = System.currentTimeMillis();
