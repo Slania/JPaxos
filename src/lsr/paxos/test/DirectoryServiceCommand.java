@@ -43,6 +43,7 @@ public class DirectoryServiceCommand implements Serializable {
         int objectIdLength = dataInput.readInt();
         int oldReplicaSetSize = dataInput.readInt();
         int newReplicaSetSize = dataInput.readInt();
+        objectId = new byte[objectIdLength];
         dataInput.readFully(objectId, 0, objectIdLength);
         oldReplicaSet = new ArrayList<Integer>();
         newReplicaSet = new ArrayList<Integer>();
