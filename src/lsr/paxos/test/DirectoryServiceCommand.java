@@ -40,11 +40,16 @@ public class DirectoryServiceCommand implements Serializable {
     public DirectoryServiceCommand(byte[] bytes) throws IOException {
         DataInputStream dataInput = new DataInputStream(new ByteArrayInputStream(bytes));
         this.directoryCommandType = DirectoryCommandType.values()[dataInput.readInt()];
+        System.out.println("Directory Command Type: " + directoryCommandType.toString());
         int objectIdLength = dataInput.readInt();
+        System.out.println("ObjectId Length: " + objectIdLength);
         int oldReplicaSetSize = dataInput.readInt();
+        System.out.println("Old Replica Set Size: " + oldReplicaSetSize);
         int newReplicaSetSize = dataInput.readInt();
+        System.out.println("New Replica Set Size: " + newReplicaSetSize);
         objectId = new byte[objectIdLength];
         dataInput.readFully(objectId, 0, objectIdLength);
+        System.out.println("Object Id: " + new String(objectId));
         oldReplicaSet = new ArrayList<Integer>();
         newReplicaSet = new ArrayList<Integer>();
         if (oldReplicaSetSize > 0){
@@ -52,12 +57,15 @@ public class DirectoryServiceCommand implements Serializable {
                 oldReplicaSet.add(dataInput.readInt());
             }
         }
+        System.out.println("Size of old replica list: " + oldReplicaSet.size());
         if (newReplicaSetSize > 0){
             for (int i = 1; i <= newReplicaSetSize; i++){
                 oldReplicaSet.add(dataInput.readInt());
             }
         }
+        System.out.println("Size of new replica list: " + newReplicaSet.size());
         migrationComplete = dataInput.readByte() == 1;
+        System.out.println("Migration complete: " + migrationComplete);
     }
 
     public List<Integer> getOldReplicaSet() {
@@ -121,7 +129,7 @@ public class DirectoryServiceCommand implements Serializable {
         builder.deleteCharAt(builder.length() - 1);
         csvNewReplicas = builder.toString();
 
-        return "Object " + objectId + " migrating from " + csvOldReplicas + " to " + csvNewReplicas + ". Migration status: " + migrationComplete;
+        return "Object " + new String(objectId) + " migrating from " + csvOldReplicas + " to " + csvNewReplicas + ". Migration status: " + migrationComplete;
     }
 
     @Override
