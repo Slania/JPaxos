@@ -26,9 +26,13 @@ import lsr.paxos.network.MessageHandler;
 import lsr.paxos.network.Network;
 import lsr.paxos.replica.ClientBatchStore.BatchState;
 import lsr.paxos.replica.ClientBatchStore.ClientBatchInfo;
+import lsr.paxos.statistics.FlowPointData;
 import lsr.paxos.statistics.QueueMonitor;
+import lsr.paxos.statistics.ReplicaRequestTimelines;
 import lsr.paxos.storage.ConsensusInstance;
 import lsr.paxos.storage.Storage;
+
+import static lsr.paxos.statistics.FlowPointData.FlowPoint.PLACEHOLDER;
 
 /**
  *  
@@ -136,14 +140,14 @@ final public class ClientBatchManager implements MessageHandler, DecideCallback 
      * @param sender 
      * @throws InterruptedException 
      */
-    void onForwardClientBatch(ForwardClientBatch fReq, int sender) 
+    void onForwardClientBatch(ForwardClientBatch fReq, int sender)
     {
         assert cliBManagerDispatcher.amIInDispatcher() :
             "Not in ClientBatchManager dispatcher. " + Thread.currentThread().getName();
         logger.info("******** in onForwardClientBatch at time: " + System.currentTimeMillis() + " ********");
         ClientRequest[] requests = fReq.requests;
         ClientBatchID rid = fReq.rid;
-
+        ReplicaRequestTimelines.addFlowPoint(rid, new FlowPointData(PLACEHOLDER, System.currentTimeMillis()));
         ClientBatchInfo bInfo = batchStore.getRequestInfo(rid);
         // Create a new entry if none exists
         if (bInfo == null) {
@@ -215,9 +219,11 @@ final public class ClientBatchManager implements MessageHandler, DecideCallback 
 
         markAcknowledged(ackVector);
         logger.info("******** in sendNextBatch method at time: " + System.currentTimeMillis() + " ********");
+        ReplicaRequestTimelines.addFlowPoint(bid, new FlowPointData(PLACEHOLDER, System.currentTimeMillis()));
         // Send to all
         network.sendToOthers(fReqMsg);
         logger.info("******** batch sent to everyone at time: " + System.currentTimeMillis() + " ********");
+        ReplicaRequestTimelines.addFlowPoint(bid, new FlowPointData(PLACEHOLDER, System.currentTimeMillis()));
         // Local delivery
         onForwardClientBatch(fReqMsg, localId);
     }

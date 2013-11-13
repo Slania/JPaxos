@@ -8,7 +8,11 @@ import java.util.logging.Logger;
 
 import lsr.common.ClientRequest;
 import lsr.common.ProcessDescriptor;
+import lsr.paxos.statistics.FlowPointData;
 import lsr.paxos.statistics.QueueMonitor;
+import lsr.paxos.statistics.ReplicaRequestTimelines;
+
+import static lsr.paxos.statistics.FlowPointData.FlowPoint.PLACEHOLDER;
 
 /**
  * This thread builds the batches with the requests received from the client and forwards
@@ -144,9 +148,9 @@ public class ClientRequestBatcher implements Runnable {
     private void sendBatch() {
         assert sizeInBytes > 0 : "Trying to send an empty batch.";
         logger.info("******** in sendBatch method of ClientRequestBatcher at time: " + System.currentTimeMillis() + " ********");
-
         // The batch id is composed of (replicaId, localSeqNumber)
         final ClientBatchID bid = new ClientBatchID(localId, sequencer.getAndIncrement());
+        ReplicaRequestTimelines.addFlowPoint(bid, new FlowPointData(PLACEHOLDER, System.currentTimeMillis()));
         // Transform the ArrayList into an array with the exact size.
         final ClientRequest[] batches = batch.toArray(new ClientRequest[batch.size()]);
         

@@ -19,12 +19,16 @@ import lsr.paxos.network.Network;
 import lsr.paxos.replica.ClientBatchManager;
 import lsr.paxos.replica.ClientRequestManager;
 import lsr.paxos.replica.Replica.CrashModel;
+import lsr.paxos.statistics.FlowPointData;
 import lsr.paxos.statistics.QueueMonitor;
+import lsr.paxos.statistics.ReplicaRequestTimelines;
 import lsr.paxos.statistics.ReplicaStats;
 import lsr.paxos.storage.ConsensusInstance;
 import lsr.paxos.storage.ConsensusInstance.LogEntryState;
 import lsr.paxos.storage.Log;
 import lsr.paxos.storage.Storage;
+
+import static lsr.paxos.statistics.FlowPointData.FlowPoint.PLACEHOLDER;
 
 /**
  * Represents part of paxos which is responsible for proposing new consensus
@@ -336,6 +340,9 @@ public class ProposerImpl implements Proposer {
         // Called from batcher thread        
         Proposal proposal = new Proposal(requests, value);
         logger.info("******** in enqueueProposal method at time: " + System.currentTimeMillis() + " ********");
+        for (ClientBatch request : requests) {
+            ReplicaRequestTimelines.addFlowPoint(request.getBatchId(), new FlowPointData(PLACEHOLDER, System.currentTimeMillis()));
+        }
         if (logger.isLoggable(Level.FINE)) {
             logger.fine("pendingProposals.size() = " + pendingProposals.size() + ", MAX: " + MAX_QUEUED_PROPOSALS);
         }
@@ -401,6 +408,9 @@ public class ProposerImpl implements Proposer {
     public void propose(ClientBatch[] requests, byte[] value) {
         assert paxos.getDispatcher().amIInDispatcher();
         logger.info("******** in propose method at time: " + System.currentTimeMillis() + " ********");
+        for (ClientBatch request : requests) {
+            ReplicaRequestTimelines.addFlowPoint(request.getBatchId(), new FlowPointData(PLACEHOLDER, System.currentTimeMillis()));
+        }
         if (state != ProposerState.PREPARED) {
             // This can happen if there is a Propose event queued on the Dispatcher when 
             // the view changes.

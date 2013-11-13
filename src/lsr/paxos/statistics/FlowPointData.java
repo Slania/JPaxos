@@ -4,7 +4,7 @@ public class FlowPointData {
 
     //points where we want to color/track the request flow
     public enum FlowPoint {
-
+        PLACEHOLDER
     }
 
     private FlowPoint flowPoint;

@@ -13,7 +13,11 @@ import lsr.common.ProcessDescriptor;
 import lsr.common.ClientBatch;
 import lsr.common.SingleThreadDispatcher;
 import lsr.paxos.replica.ClientBatchID;
+import lsr.paxos.statistics.FlowPointData;
 import lsr.paxos.statistics.QueueMonitor;
+import lsr.paxos.statistics.ReplicaRequestTimelines;
+
+import static lsr.paxos.statistics.FlowPointData.FlowPoint.PLACEHOLDER;
 
 /**
  * Thread responsible to receive and queue client requests and to prepare batches
@@ -214,6 +218,7 @@ public class ActiveBatcher implements Runnable {
                 ByteBuffer bb = ByteBuffer.allocate(batchSize);
                 bb.putInt(batchReqs.size());
                 for (ClientBatch req : batchReqs) {
+                    ReplicaRequestTimelines.addFlowPoint(req.getBatchId(), new FlowPointData(PLACEHOLDER, System.currentTimeMillis()));
                     req.writeTo(bb);
                 }
                 byte[] value = bb.array();

@@ -23,14 +23,14 @@ import lsr.paxos.network.Network;
 import lsr.paxos.network.TcpNetwork;
 import lsr.paxos.network.UdpNetwork;
 import lsr.paxos.replica.ClientRequestManager;
-import lsr.paxos.statistics.QueueMonitor;
-import lsr.paxos.statistics.ReplicaStats;
-import lsr.paxos.statistics.ThreadTimes;
+import lsr.paxos.statistics.*;
 import lsr.paxos.storage.ConsensusInstance;
 import lsr.paxos.storage.ConsensusInstance.LogEntryState;
 import lsr.paxos.storage.Log;
 import lsr.paxos.storage.Storage;
 import lsr.paxos.test.LeaderPromoter;
+
+import static lsr.paxos.statistics.FlowPointData.FlowPoint.PLACEHOLDER;
 
 /**
  * Implements state machine replication. It keeps a replicated log internally
@@ -203,6 +203,7 @@ public class Paxos implements FailureDetector.FailureDetectorListener {
     public boolean enqueueRequest(ClientBatch request) {
         // called by one of the Selector threads.
         logger.info("******** in enqueueRequest method at time: " + System.currentTimeMillis() + " ********");
+        ReplicaRequestTimelines.addFlowPoint(request.getBatchId(), new FlowPointData(PLACEHOLDER, System.currentTimeMillis()));
         return activeBatcher.enqueueClientRequest(request);
     }
 
