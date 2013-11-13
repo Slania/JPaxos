@@ -1,14 +1,5 @@
 package lsr.paxos;
 
-import java.nio.ByteBuffer;
-import java.util.ArrayDeque;
-import java.util.BitSet;
-import java.util.Deque;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import lsr.common.ClientBatch;
 import lsr.common.ProcessDescriptor;
 import lsr.paxos.messages.Message;
@@ -28,7 +19,13 @@ import lsr.paxos.storage.ConsensusInstance.LogEntryState;
 import lsr.paxos.storage.Log;
 import lsr.paxos.storage.Storage;
 
-import static lsr.paxos.statistics.FlowPointData.FlowPoint.PLACEHOLDER;
+import java.nio.ByteBuffer;
+import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import static lsr.paxos.statistics.FlowPointData.FlowPoint.ProposerImpl_EnqueueProposal;
+import static lsr.paxos.statistics.FlowPointData.FlowPoint.ProposerImpl_Propose;
 
 /**
  * Represents part of paxos which is responsible for proposing new consensus
@@ -341,7 +338,7 @@ public class ProposerImpl implements Proposer {
         Proposal proposal = new Proposal(requests, value);
         logger.info("******** in enqueueProposal method at time: " + System.currentTimeMillis() + " ********");
         for (ClientBatch request : requests) {
-            ReplicaRequestTimelines.addFlowPoint(request.getBatchId(), new FlowPointData(PLACEHOLDER, System.currentTimeMillis()));
+            ReplicaRequestTimelines.addFlowPoint(request.getBatchId(), new FlowPointData(ProposerImpl_EnqueueProposal, System.currentTimeMillis()));
         }
         if (logger.isLoggable(Level.FINE)) {
             logger.fine("pendingProposals.size() = " + pendingProposals.size() + ", MAX: " + MAX_QUEUED_PROPOSALS);
@@ -409,7 +406,7 @@ public class ProposerImpl implements Proposer {
         assert paxos.getDispatcher().amIInDispatcher();
         logger.info("******** in propose method at time: " + System.currentTimeMillis() + " ********");
         for (ClientBatch request : requests) {
-            ReplicaRequestTimelines.addFlowPoint(request.getBatchId(), new FlowPointData(PLACEHOLDER, System.currentTimeMillis()));
+            ReplicaRequestTimelines.addFlowPoint(request.getBatchId(), new FlowPointData(ProposerImpl_Propose, System.currentTimeMillis()));
         }
         if (state != ProposerState.PREPARED) {
             // This can happen if there is a Propose event queued on the Dispatcher when 

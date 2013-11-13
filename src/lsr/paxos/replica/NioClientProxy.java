@@ -10,6 +10,10 @@ import lsr.common.ClientReply;
 import lsr.common.nio.PacketHandler;
 import lsr.common.nio.ReaderAndWriter;
 import lsr.common.nio.SelectorThread;
+import lsr.paxos.statistics.FlowPointData;
+import lsr.paxos.statistics.ReplicaRequestTimelines;
+
+import static lsr.paxos.statistics.FlowPointData.FlowPoint.NioClientProxy_Execute;
 
 /**
  * This class is used to handle one client connection. It uses

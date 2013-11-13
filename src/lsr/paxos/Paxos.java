@@ -1,36 +1,25 @@
 package lsr.paxos;
 
-import java.io.IOException;
-import java.util.BitSet;
-import java.util.Deque;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import lsr.common.ClientBatch;
 import lsr.common.ProcessDescriptor;
 import lsr.common.SingleThreadDispatcher;
 import lsr.paxos.Proposer.ProposerState;
-import lsr.paxos.messages.Accept;
-import lsr.paxos.messages.Alive;
-import lsr.paxos.messages.Message;
-import lsr.paxos.messages.MessageType;
-import lsr.paxos.messages.Prepare;
-import lsr.paxos.messages.PrepareOK;
-import lsr.paxos.messages.Propose;
-import lsr.paxos.network.GenericNetwork;
-import lsr.paxos.network.MessageHandler;
-import lsr.paxos.network.Network;
-import lsr.paxos.network.TcpNetwork;
-import lsr.paxos.network.UdpNetwork;
+import lsr.paxos.messages.*;
+import lsr.paxos.network.*;
 import lsr.paxos.replica.ClientRequestManager;
 import lsr.paxos.statistics.*;
 import lsr.paxos.storage.ConsensusInstance;
 import lsr.paxos.storage.ConsensusInstance.LogEntryState;
 import lsr.paxos.storage.Log;
 import lsr.paxos.storage.Storage;
-import lsr.paxos.test.LeaderPromoter;
 
-import static lsr.paxos.statistics.FlowPointData.FlowPoint.PLACEHOLDER;
+import java.io.IOException;
+import java.util.BitSet;
+import java.util.Deque;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import static lsr.paxos.statistics.FlowPointData.FlowPoint.Paxos_EnqueueRequest;
 
 /**
  * Implements state machine replication. It keeps a replicated log internally
@@ -203,7 +192,7 @@ public class Paxos implements FailureDetector.FailureDetectorListener {
     public boolean enqueueRequest(ClientBatch request) {
         // called by one of the Selector threads.
         logger.info("******** in enqueueRequest method at time: " + System.currentTimeMillis() + " ********");
-        ReplicaRequestTimelines.addFlowPoint(request.getBatchId(), new FlowPointData(PLACEHOLDER, System.currentTimeMillis()));
+        ReplicaRequestTimelines.addFlowPoint(request.getBatchId(), new FlowPointData(Paxos_EnqueueRequest, System.currentTimeMillis()));
         return activeBatcher.enqueueClientRequest(request);
     }
 

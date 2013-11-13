@@ -4,7 +4,11 @@ public class FlowPointData {
 
     //points where we want to color/track the request flow
     public enum FlowPoint {
-        PLACEHOLDER
+        NioClientProxy_Execute, RequestBatcher_Run, RequestBatcher_SendBatch, ClientBatchManager_SendToAll, ClientBatchManager_BatchSent,
+        ClientBatchManager_OnForwardClientBatch, Paxos_Propose, Paxos_EnqueueRequest, ActiveBatcher_DispatchRequests, ProposerImpl_EnqueueProposal,
+        ProposerImpl_Propose, Paxos_OnMessageReceived, Paxos_MessageEvent_Run, Learner_OnAccept, Acceptor_OnPropose, Paxos_Decide,
+        ClientBatchManager_InnerOnBatchOrdered, ClientBatchManager_ExecuteRequests, Replica_ExecuteClientBatch, SimplifiedMapService_Execute,
+        ClientRequestManager_OnRequestExecuted, NioClientProxy_Send, ClientRequestBatcher_SendBatch
     }
 
     private FlowPoint flowPoint;

@@ -1,18 +1,18 @@
 package lsr.paxos.replica;
 
-import java.util.ArrayList;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.logging.Logger;
-
 import lsr.common.ClientRequest;
 import lsr.common.ProcessDescriptor;
 import lsr.paxos.statistics.FlowPointData;
 import lsr.paxos.statistics.QueueMonitor;
 import lsr.paxos.statistics.ReplicaRequestTimelines;
 
-import static lsr.paxos.statistics.FlowPointData.FlowPoint.PLACEHOLDER;
+import java.util.ArrayList;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Logger;
+
+import static lsr.paxos.statistics.FlowPointData.FlowPoint.ClientRequestBatcher_SendBatch;
 
 /**
  * This thread builds the batches with the requests received from the client and forwards
@@ -150,7 +150,7 @@ public class ClientRequestBatcher implements Runnable {
         logger.info("******** in sendBatch method of ClientRequestBatcher at time: " + System.currentTimeMillis() + " ********");
         // The batch id is composed of (replicaId, localSeqNumber)
         final ClientBatchID bid = new ClientBatchID(localId, sequencer.getAndIncrement());
-        ReplicaRequestTimelines.addFlowPoint(bid, new FlowPointData(PLACEHOLDER, System.currentTimeMillis()));
+        ReplicaRequestTimelines.addFlowPoint(bid, new FlowPointData(ClientRequestBatcher_SendBatch, System.currentTimeMillis()));
         // Transform the ArrayList into an array with the exact size.
         final ClientRequest[] batches = batch.toArray(new ClientRequest[batch.size()]);
         

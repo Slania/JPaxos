@@ -1,6 +1,14 @@
 package lsr.paxos;
 
 
+import lsr.common.ClientBatch;
+import lsr.common.ProcessDescriptor;
+import lsr.common.SingleThreadDispatcher;
+import lsr.paxos.replica.ClientBatchID;
+import lsr.paxos.statistics.FlowPointData;
+import lsr.paxos.statistics.QueueMonitor;
+import lsr.paxos.statistics.ReplicaRequestTimelines;
+
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -9,15 +17,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import lsr.common.ProcessDescriptor;
-import lsr.common.ClientBatch;
-import lsr.common.SingleThreadDispatcher;
-import lsr.paxos.replica.ClientBatchID;
-import lsr.paxos.statistics.FlowPointData;
-import lsr.paxos.statistics.QueueMonitor;
-import lsr.paxos.statistics.ReplicaRequestTimelines;
-
-import static lsr.paxos.statistics.FlowPointData.FlowPoint.PLACEHOLDER;
+import static lsr.paxos.statistics.FlowPointData.FlowPoint.ActiveBatcher_DispatchRequests;
 
 /**
  * Thread responsible to receive and queue client requests and to prepare batches
@@ -218,7 +218,7 @@ public class ActiveBatcher implements Runnable {
                 ByteBuffer bb = ByteBuffer.allocate(batchSize);
                 bb.putInt(batchReqs.size());
                 for (ClientBatch req : batchReqs) {
-                    ReplicaRequestTimelines.addFlowPoint(req.getBatchId(), new FlowPointData(PLACEHOLDER, System.currentTimeMillis()));
+                    ReplicaRequestTimelines.addFlowPoint(req.getBatchId(), new FlowPointData(ActiveBatcher_DispatchRequests, System.currentTimeMillis()));
                     req.writeTo(bb);
                 }
                 byte[] value = bb.array();
