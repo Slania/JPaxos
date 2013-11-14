@@ -282,7 +282,7 @@ public class Paxos implements FailureDetector.FailureDetectorListener {
         ReplicaStats.getInstance().consensusEnd(instanceId);
         ThreadTimes.getInstance().startInstance(instanceId + 1);
 
-        Deque<ClientBatch> requests = Batcher.unpack(ci.getValue());
+        requests = Batcher.unpack(ci.getValue());
         decideCallback.onRequestOrdered(instanceId, requests);
     }
 
