@@ -1,13 +1,20 @@
 package lsr.paxos;
 
+import java.util.Deque;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import lsr.common.ClientBatch;
 import lsr.common.ProcessDescriptor;
 import lsr.paxos.messages.Accept;
+import lsr.paxos.statistics.FlowPointData;
+import lsr.paxos.statistics.ReplicaRequestTimelines;
 import lsr.paxos.storage.ConsensusInstance;
 import lsr.paxos.storage.ConsensusInstance.LogEntryState;
 import lsr.paxos.storage.Storage;
+
+import static lsr.paxos.statistics.FlowPointData.FlowPoint.Acceptor_OnPropose;
+import static lsr.paxos.statistics.FlowPointData.FlowPoint.Learner_OnAccept;
 
 /**
  * Represents the part of <code>Paxos</code> which is responsible for receiving
@@ -47,6 +54,12 @@ class Learner {
                                                          Thread.currentThread();
 
         ConsensusInstance instance = storage.getLog().getInstance(message.getInstanceId());
+
+        Deque<ClientBatch> requests = Batcher.unpack(instance.getValue().clone());
+
+        for (ClientBatch request : requests) {
+            ReplicaRequestTimelines.addFlowPoint(request.getBatchId(), new FlowPointData(Learner_OnAccept, System.currentTimeMillis()));
+        }
                 
         // too old instance or already decided
         if (instance == null) {

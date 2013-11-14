@@ -244,6 +244,11 @@ final public class ClientBatchManager implements MessageHandler, DecideCallback 
         while (true) {
             // Try to execute the next instance. It may not yet have been decided.
             Deque<ClientBatch> batch = decidedWaitingExecution.get(nextInstance);
+
+            for (ClientBatch request : batch) {
+                ReplicaRequestTimelines.addFlowPoint(request.getBatchId(), new FlowPointData(ClientBatchManager_ExecuteRequests, System.currentTimeMillis()));
+            }
+
             if (batch == null) {
                 logger.info("Cannot continue execution. Next instance not decided: " + nextInstance);
                 return;
@@ -314,6 +319,10 @@ final public class ClientBatchManager implements MessageHandler, DecideCallback 
             logger.info("Instance: " + instance + ": " + batch.toString());
         }
         logger.info("******** in innerOnBatchOrdered method after instance has been decided at time: " + System.currentTimeMillis() + " ********");
+
+        for (ClientBatch request : batch) {
+            ReplicaRequestTimelines.addFlowPoint(request.getBatchId(), new FlowPointData(ClientBatchManager_InnerOnBatchOrdered, System.currentTimeMillis()));
+        }
         // Update the batch store, mark all client batches inside this Paxos batch as decided.
         for (ClientBatch cBatch : batch) {
             ClientBatchID bid = cBatch.getBatchId();

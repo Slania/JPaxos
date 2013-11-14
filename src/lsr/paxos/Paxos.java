@@ -19,6 +19,8 @@ import java.util.Deque;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static lsr.paxos.statistics.FlowPointData.FlowPoint.Acceptor_OnPropose;
+import static lsr.paxos.statistics.FlowPointData.FlowPoint.Paxos_Decide;
 import static lsr.paxos.statistics.FlowPointData.FlowPoint.Paxos_EnqueueRequest;
 
 /**
@@ -247,6 +249,12 @@ public class Paxos implements FailureDetector.FailureDetectorListener {
         assert ci.getState() != LogEntryState.DECIDED : "Deciding on already decided instance";
 
         ci.setDecided();
+
+        Deque<ClientBatch> requests = Batcher.unpack(ci.getValue().clone());
+
+        for (ClientBatch request : requests) {
+            ReplicaRequestTimelines.addFlowPoint(request.getBatchId(), new FlowPointData(Paxos_Decide, System.currentTimeMillis()));
+        }
 
         if (logger.isLoggable(Level.INFO)) {
             logger.info("Decided " + instanceId + ", Log Size: " + storage.getLog().size());

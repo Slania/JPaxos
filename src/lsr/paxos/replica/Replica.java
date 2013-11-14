@@ -30,13 +30,18 @@ import lsr.paxos.recovery.RecoveryAlgorithm;
 import lsr.paxos.recovery.RecoveryListener;
 import lsr.paxos.recovery.ViewSSRecovery;
 import lsr.paxos.replica.ClientBatchStore.ClientBatchInfo;
+import lsr.paxos.statistics.FlowPointData;
 import lsr.paxos.statistics.PerformanceLogger;
+import lsr.paxos.statistics.ReplicaRequestTimelines;
 import lsr.paxos.statistics.ReplicaStats;
 import lsr.paxos.storage.ConsensusInstance;
 import lsr.paxos.storage.ConsensusInstance.LogEntryState;
 import lsr.paxos.storage.SingleNumberWriter;
 import lsr.paxos.storage.Storage;
 import lsr.service.Service;
+
+import static lsr.paxos.statistics.FlowPointData.FlowPoint.Acceptor_OnPropose;
+import static lsr.paxos.statistics.FlowPointData.FlowPoint.Replica_ExecuteClientBatch;
 
 /**
  * Manages replication of a service. Receives requests from the client, orders
@@ -265,6 +270,10 @@ public class Replica {
     private void innerExecuteClientBatch(int instance, ClientBatchInfo bInfo) {
         assert dispatcher.amIInDispatcher() : "Wrong thread: " + Thread.currentThread().getName();
         logger.info("******** in innerExecuteClientBatch method at time: " + System.currentTimeMillis() + " ********");
+
+        ClientBatch clientBatch = new ClientBatch(bInfo.bid);
+
+        ReplicaRequestTimelines.addFlowPoint(clientBatch.getBatchId(), new FlowPointData(Replica_ExecuteClientBatch, System.currentTimeMillis()));
 
         if (logger.isLoggable(Level.FINE)) {
             logger.fine("Executing batch " + bInfo + ", instance number " + instance) ;
