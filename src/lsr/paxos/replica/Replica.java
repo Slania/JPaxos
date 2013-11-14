@@ -322,6 +322,9 @@ public class Replica {
             assert requestManager != null : "Request manager should not be null";
             requestManager.onRequestExecuted(cRequest, reply);
         }
+
+        ReplicaRequestTimelines.logFLowPoints(clientBatch.getBatchId());
+
 //        if (logger.isLoggable(Level.FINE)) {
 //            logger.fine(sb.toString());
 //        }

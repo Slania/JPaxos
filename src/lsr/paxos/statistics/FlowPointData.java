@@ -34,4 +34,9 @@ public class FlowPointData {
     public void setTimestamp(Long timestamp) {
         this.timestamp = timestamp;
     }
+
+    @Override
+    public String toString() {
+        return flowPoint.toString() + ": " + timestamp.toString() + "\n";
+    }
 }

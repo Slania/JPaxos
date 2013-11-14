@@ -5,8 +5,11 @@ import lsr.paxos.replica.ClientBatchID;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.logging.Logger;
 
 public class ReplicaRequestTimelines {
+
+    static final Logger logger = Logger.getLogger(ReplicaRequestTimelines.class.getCanonicalName());
 
     public static HashMap<ClientBatchID, List<FlowPointData>> requestFlowMap;
 
@@ -19,5 +22,12 @@ public class ReplicaRequestTimelines {
         List<FlowPointData> fdp = requestFlowMap.get(clientBatchID);
         fdp.add(data);
         requestFlowMap.put(clientBatchID, fdp);
+    }
+
+    public static void logFLowPoints(ClientBatchID clientBatchID){
+        List<FlowPointData> flowPointData = requestFlowMap.get(clientBatchID);
+        for (FlowPointData flowPoint : flowPointData) {
+            logger.info("*******" + flowPoint.toString() + "*******");
+        }
     }
 }
