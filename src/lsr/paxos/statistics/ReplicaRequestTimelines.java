@@ -11,7 +11,7 @@ public class ReplicaRequestTimelines {
 
     static final Logger logger = Logger.getLogger(ReplicaRequestTimelines.class.getCanonicalName());
 
-    public static HashMap<ClientBatchID, List<FlowPointData>> requestFlowMap;
+    public static HashMap<ClientBatchID, List<FlowPointData>> requestFlowMap = new HashMap<ClientBatchID, List<FlowPointData>>();
 
     public static final int processId = ProcessDescriptor.getInstance().localId;
 
