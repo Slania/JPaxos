@@ -245,13 +245,13 @@ final public class ClientBatchManager implements MessageHandler, DecideCallback 
             // Try to execute the next instance. It may not yet have been decided.
             Deque<ClientBatch> batch = decidedWaitingExecution.get(nextInstance);
 
-            for (ClientBatch request : batch) {
-                ReplicaRequestTimelines.addFlowPoint(request.getBatchId(), new FlowPointData(ClientBatchManager_ExecuteRequests, System.currentTimeMillis()));
-            }
-
             if (batch == null) {
                 logger.info("Cannot continue execution. Next instance not decided: " + nextInstance);
                 return;
+            }
+
+            for (ClientBatch request : batch) {
+                ReplicaRequestTimelines.addFlowPoint(request.getBatchId(), new FlowPointData(ClientBatchManager_ExecuteRequests, System.currentTimeMillis()));
             }
             
             logger.info("Executing instance: " + nextInstance);            
