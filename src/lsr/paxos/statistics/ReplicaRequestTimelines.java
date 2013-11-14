@@ -3,6 +3,7 @@ package lsr.paxos.statistics;
 import lsr.common.ProcessDescriptor;
 import lsr.paxos.replica.ClientBatchID;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Logger;
@@ -20,6 +21,9 @@ public class ReplicaRequestTimelines {
     public static void addFlowPoint(ClientBatchID clientBatchID, FlowPointData data){
         data.setTimestamp(data.getTimestamp() - skew);
         List<FlowPointData> fdp = requestFlowMap.get(clientBatchID);
+        if (fdp == null) {
+            fdp = new ArrayList<FlowPointData>();
+        }
         fdp.add(data);
         requestFlowMap.put(clientBatchID, fdp);
     }
