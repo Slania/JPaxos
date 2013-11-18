@@ -338,7 +338,9 @@ public class ProposerImpl implements Proposer {
         Proposal proposal = new Proposal(requests, value);
         logger.info("******** in enqueueProposal method at time: " + System.currentTimeMillis() + " ********");
         for (ClientBatch request : requests) {
-            ReplicaRequestTimelines.addFlowPoint(request.getBatchId(), new FlowPointData(ProposerImpl_EnqueueProposal, System.currentTimeMillis()));
+            synchronized (ReplicaRequestTimelines.lock) {
+                ReplicaRequestTimelines.addFlowPoint(request.getBatchId(), new FlowPointData(ProposerImpl_EnqueueProposal, System.currentTimeMillis()));
+            }
         }
         if (logger.isLoggable(Level.FINE)) {
             logger.fine("pendingProposals.size() = " + pendingProposals.size() + ", MAX: " + MAX_QUEUED_PROPOSALS);
@@ -406,7 +408,9 @@ public class ProposerImpl implements Proposer {
         assert paxos.getDispatcher().amIInDispatcher();
         logger.info("******** in propose method at time: " + System.currentTimeMillis() + " ********");
         for (ClientBatch request : requests) {
-            ReplicaRequestTimelines.addFlowPoint(request.getBatchId(), new FlowPointData(ProposerImpl_Propose, System.currentTimeMillis()));
+            synchronized (ReplicaRequestTimelines.lock) {
+                ReplicaRequestTimelines.addFlowPoint(request.getBatchId(), new FlowPointData(ProposerImpl_Propose, System.currentTimeMillis()));
+            }
         }
         if (state != ProposerState.PREPARED) {
             // This can happen if there is a Propose event queued on the Dispatcher when 

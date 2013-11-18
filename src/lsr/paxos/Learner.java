@@ -58,7 +58,9 @@ class Learner {
         Deque<ClientBatch> requests = Batcher.unpack(instance.getValue().clone());
 
         for (ClientBatch request : requests) {
-            ReplicaRequestTimelines.addFlowPoint(request.getBatchId(), new FlowPointData(Learner_OnAccept, System.currentTimeMillis()));
+            synchronized (ReplicaRequestTimelines.lock) {
+                ReplicaRequestTimelines.addFlowPoint(request.getBatchId(), new FlowPointData(Learner_OnAccept, System.currentTimeMillis()));
+            }
         }
                 
         // too old instance or already decided

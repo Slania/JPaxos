@@ -194,7 +194,9 @@ public class Paxos implements FailureDetector.FailureDetectorListener {
     public boolean enqueueRequest(ClientBatch request) {
         // called by one of the Selector threads.
         logger.info("******** in enqueueRequest method at time: " + System.currentTimeMillis() + " ********");
-        ReplicaRequestTimelines.addFlowPoint(request.getBatchId(), new FlowPointData(Paxos_EnqueueRequest, System.currentTimeMillis()));
+        synchronized (ReplicaRequestTimelines.lock) {
+            ReplicaRequestTimelines.addFlowPoint(request.getBatchId(), new FlowPointData(Paxos_EnqueueRequest, System.currentTimeMillis()));
+        }
         return activeBatcher.enqueueClientRequest(request);
     }
 
@@ -253,7 +255,9 @@ public class Paxos implements FailureDetector.FailureDetectorListener {
         Deque<ClientBatch> requests = Batcher.unpack(ci.getValue().clone());
 
         for (ClientBatch request : requests) {
-            ReplicaRequestTimelines.addFlowPoint(request.getBatchId(), new FlowPointData(Paxos_Decide, System.currentTimeMillis()));
+            synchronized (ReplicaRequestTimelines.lock) {
+                ReplicaRequestTimelines.addFlowPoint(request.getBatchId(), new FlowPointData(Paxos_Decide, System.currentTimeMillis()));
+            }
         }
 
         if (logger.isLoggable(Level.INFO)) {

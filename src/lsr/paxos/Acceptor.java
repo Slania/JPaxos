@@ -134,7 +134,9 @@ class Acceptor {
         Deque<ClientBatch> requests = Batcher.unpack(instance.getValue().clone());
 
         for (ClientBatch request : requests) {
-            ReplicaRequestTimelines.addFlowPoint(request.getBatchId(), new FlowPointData(Acceptor_OnPropose, System.currentTimeMillis()));
+            synchronized (ReplicaRequestTimelines.lock) {
+                ReplicaRequestTimelines.addFlowPoint(request.getBatchId(), new FlowPointData(Acceptor_OnPropose, System.currentTimeMillis()));
+            }
         }
 
         ProcessDescriptor descriptor = ProcessDescriptor.getInstance();

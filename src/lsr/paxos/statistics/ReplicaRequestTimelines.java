@@ -10,6 +10,8 @@ import java.util.logging.Logger;
 
 public class ReplicaRequestTimelines {
 
+    public static final Object lock = new Object();
+
     static final Logger logger = Logger.getLogger(ReplicaRequestTimelines.class.getCanonicalName());
 
     public static HashMap<ClientBatchID, List<FlowPointData>> requestFlowMap = new HashMap<ClientBatchID, List<FlowPointData>>();
@@ -33,5 +35,6 @@ public class ReplicaRequestTimelines {
         for (FlowPointData flowPoint : flowPointData) {
             logger.info("*******" + flowPoint.toString() + "*******");
         }
+        requestFlowMap.remove(clientBatchID);
     }
 }

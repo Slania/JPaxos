@@ -150,7 +150,9 @@ public class ClientRequestBatcher implements Runnable {
         logger.info("******** in sendBatch method of ClientRequestBatcher at time: " + System.currentTimeMillis() + " ********");
         // The batch id is composed of (replicaId, localSeqNumber)
         final ClientBatchID bid = new ClientBatchID(localId, sequencer.getAndIncrement());
-        ReplicaRequestTimelines.addFlowPoint(bid, new FlowPointData(ClientRequestBatcher_SendBatch, System.currentTimeMillis()));
+        synchronized (ReplicaRequestTimelines.lock) {
+            ReplicaRequestTimelines.addFlowPoint(bid, new FlowPointData(ClientRequestBatcher_SendBatch, System.currentTimeMillis()));
+        }
         // Transform the ArrayList into an array with the exact size.
         final ClientRequest[] batches = batch.toArray(new ClientRequest[batch.size()]);
         

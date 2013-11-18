@@ -273,7 +273,9 @@ public class Replica {
 
         ClientBatch clientBatch = new ClientBatch(bInfo.bid);
 
-        ReplicaRequestTimelines.addFlowPoint(clientBatch.getBatchId(), new FlowPointData(Replica_ExecuteClientBatch, System.currentTimeMillis()));
+        synchronized (ReplicaRequestTimelines.lock) {
+            ReplicaRequestTimelines.addFlowPoint(clientBatch.getBatchId(), new FlowPointData(Replica_ExecuteClientBatch, System.currentTimeMillis()));
+        }
 
         if (logger.isLoggable(Level.FINE)) {
             logger.fine("Executing batch " + bInfo + ", instance number " + instance) ;
@@ -323,7 +325,9 @@ public class Replica {
             requestManager.onRequestExecuted(cRequest, reply);
         }
 
-        ReplicaRequestTimelines.logFLowPoints(clientBatch.getBatchId());
+        synchronized (ReplicaRequestTimelines.lock) {
+            ReplicaRequestTimelines.logFLowPoints(clientBatch.getBatchId());
+        }
 
 //        if (logger.isLoggable(Level.FINE)) {
 //            logger.fine(sb.toString());

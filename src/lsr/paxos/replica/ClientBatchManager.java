@@ -147,7 +147,9 @@ final public class ClientBatchManager implements MessageHandler, DecideCallback 
         logger.info("******** in onForwardClientBatch at time: " + System.currentTimeMillis() + " ********");
         ClientRequest[] requests = fReq.requests;
         ClientBatchID rid = fReq.rid;
-        ReplicaRequestTimelines.addFlowPoint(rid, new FlowPointData(ClientBatchManager_OnForwardClientBatch, System.currentTimeMillis()));
+        synchronized (ReplicaRequestTimelines.lock) {
+            ReplicaRequestTimelines.addFlowPoint(rid, new FlowPointData(ClientBatchManager_OnForwardClientBatch, System.currentTimeMillis()));
+        }
         ClientBatchInfo bInfo = batchStore.getRequestInfo(rid);
         // Create a new entry if none exists
         if (bInfo == null) {
@@ -219,11 +221,15 @@ final public class ClientBatchManager implements MessageHandler, DecideCallback 
 
         markAcknowledged(ackVector);
         logger.info("******** in sendNextBatch method at time: " + System.currentTimeMillis() + " ********");
-        ReplicaRequestTimelines.addFlowPoint(bid, new FlowPointData(ClientBatchManager_SendToAll, System.currentTimeMillis()));
+        synchronized (ReplicaRequestTimelines.lock) {
+            ReplicaRequestTimelines.addFlowPoint(bid, new FlowPointData(ClientBatchManager_SendToAll, System.currentTimeMillis()));
+        }
         // Send to all
         network.sendToOthers(fReqMsg);
         logger.info("******** batch sent to everyone at time: " + System.currentTimeMillis() + " ********");
-        ReplicaRequestTimelines.addFlowPoint(bid, new FlowPointData(ClientBatchManager_BatchSent, System.currentTimeMillis()));
+        synchronized (ReplicaRequestTimelines.lock) {
+            ReplicaRequestTimelines.addFlowPoint(bid, new FlowPointData(ClientBatchManager_BatchSent, System.currentTimeMillis()));
+        }
         // Local delivery
         onForwardClientBatch(fReqMsg, localId);
     }
@@ -251,7 +257,9 @@ final public class ClientBatchManager implements MessageHandler, DecideCallback 
             }
 
             for (ClientBatch request : batch) {
-                ReplicaRequestTimelines.addFlowPoint(request.getBatchId(), new FlowPointData(ClientBatchManager_ExecuteRequests, System.currentTimeMillis()));
+                synchronized (ReplicaRequestTimelines.lock) {
+                    ReplicaRequestTimelines.addFlowPoint(request.getBatchId(), new FlowPointData(ClientBatchManager_ExecuteRequests, System.currentTimeMillis()));
+                }
             }
             
             logger.info("Executing instance: " + nextInstance);            
@@ -321,7 +329,9 @@ final public class ClientBatchManager implements MessageHandler, DecideCallback 
         logger.info("******** in innerOnBatchOrdered method after instance has been decided at time: " + System.currentTimeMillis() + " ********");
 
         for (ClientBatch request : batch) {
-            ReplicaRequestTimelines.addFlowPoint(request.getBatchId(), new FlowPointData(ClientBatchManager_InnerOnBatchOrdered, System.currentTimeMillis()));
+            synchronized (ReplicaRequestTimelines.lock) {
+                ReplicaRequestTimelines.addFlowPoint(request.getBatchId(), new FlowPointData(ClientBatchManager_InnerOnBatchOrdered, System.currentTimeMillis()));
+            }
         }
         // Update the batch store, mark all client batches inside this Paxos batch as decided.
         for (ClientBatch cBatch : batch) {

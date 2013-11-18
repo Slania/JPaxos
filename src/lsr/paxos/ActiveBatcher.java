@@ -218,7 +218,9 @@ public class ActiveBatcher implements Runnable {
                 ByteBuffer bb = ByteBuffer.allocate(batchSize);
                 bb.putInt(batchReqs.size());
                 for (ClientBatch req : batchReqs) {
-                    ReplicaRequestTimelines.addFlowPoint(req.getBatchId(), new FlowPointData(ActiveBatcher_DispatchRequests, System.currentTimeMillis()));
+                    synchronized (ReplicaRequestTimelines.lock) {
+                        ReplicaRequestTimelines.addFlowPoint(req.getBatchId(), new FlowPointData(ActiveBatcher_DispatchRequests, System.currentTimeMillis()));
+                    }
                     req.writeTo(bb);
                 }
                 byte[] value = bb.array();
