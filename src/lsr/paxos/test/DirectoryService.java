@@ -31,6 +31,8 @@ public class DirectoryService extends SimplifiedService {
 
         ByteArrayOutputStream byteArrayOutput = new ByteArrayOutputStream();
         DataOutputStream dataOutput = new DataOutputStream(byteArrayOutput);
+
+        logger.info(command.toString());
         try {
             dataOutput.writeChars(command.toString());
         } catch (IOException e) {
