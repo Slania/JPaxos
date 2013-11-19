@@ -67,7 +67,8 @@ public class DirectoryClient {
             byte[] response = client.execute(command.toByteArray());
             long finish = System.currentTimeMillis();
             System.out.println("Run took: " + (finish - start) + "ms");
-            String status = new String(response);
+            ByteBuffer buffer = ByteBuffer.wrap(response);
+            String status = new String(buffer.array());
             System.out.println("Done! Response: " + status);
         }
     }
