@@ -34,7 +34,7 @@ public class DirectoryProtocol {
 
             if (socketChannel != null) {
                 socketChannel.read(byteBuffer);
-                String objectId = byteBuffer.toString();
+                String objectId = new String(byteBuffer.array());
                 System.out.println("*******" + "Got string: " + objectId + "*******");
             }
         }
