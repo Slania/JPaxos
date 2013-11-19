@@ -45,11 +45,13 @@ public interface Service {
      * be called by {@link Replica} in proper order. The number of request is
      * needed only for snapshot mechanism.
      * 
+     *
      * @param value - value of instance to execute on this service
      * @param executeSeqNo - ordinal number of this requests
+     * @param isLeader
      * @return generated reply which will be sent to client
      */
-    byte[] execute(byte[] value, int executeSeqNo);
+    byte[] execute(byte[] value, int executeSeqNo, boolean isLeader);
 
     /**
      * Notifies service that it would be good to create snapshot now.

@@ -1,6 +1,5 @@
 package lsr.paxos.test;
 
-import lsr.common.PID;
 import lsr.service.SimplifiedService;
 
 import java.io.*;
@@ -17,7 +16,7 @@ public class DirectoryService extends SimplifiedService {
 
     private HashMap<DirectoryServiceCommand, Boolean> map = new HashMap<DirectoryServiceCommand, Boolean>();
 
-    protected byte[] execute(byte[] value) {
+    protected byte[] execute(byte[] value, boolean isLeader) {
         logger.info("******** in execute method of DirectoryService at time: " + System.currentTimeMillis() + " ********");
         DirectoryServiceCommand command;
         try {
@@ -38,12 +37,13 @@ public class DirectoryService extends SimplifiedService {
             e.printStackTrace();
             return null;
         }
-
-        try {
-            connectTo();
-            output.write(command.getObjectId());
-        } catch (IOException e) {
-            e.printStackTrace();
+        if (isLeader) {
+            try {
+                connectTo();
+                output.write(command.getObjectId());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
 
         return byteArrayOutput.toByteArray();

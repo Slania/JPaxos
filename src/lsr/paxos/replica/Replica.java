@@ -304,7 +304,7 @@ public class Replica {
 //                sb.append(cRequest.getRequestId()).append(" ");
 //            }
             // Here the replica thread is given to Service.
-            byte[] result = serviceProxy.execute(cRequest);
+            byte[] result = serviceProxy.execute(cRequest, paxos.isLeader());
             // Statistics. Count how many requests are in this instance
             requestsInInstance++;
 

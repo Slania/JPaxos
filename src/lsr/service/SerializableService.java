@@ -61,7 +61,7 @@ public abstract class SerializableService extends SimplifiedService {
      */
     protected abstract Object makeObjectSnapshot();
 
-    protected final byte[] execute(byte[] value) {
+    protected final byte[] execute(byte[] value, boolean isLeader) {
         try {
             return byteArrayFromObject(execute(byteArrayToObject(value)));
         } catch (IOException e) {

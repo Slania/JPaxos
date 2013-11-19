@@ -157,10 +157,12 @@ public class ServiceProxy implements SnapshotListener {
     /**
      * Executes the request on underlying service with correct sequence number.
      * 
+     *
      * @param request - the request to execute on service
+     * @param isLeader
      * @return the reply from service
      */
-    public byte[] execute(ClientRequest request) {
+    public byte[] execute(ClientRequest request, boolean isLeader) {
         nextSeqNo++;
         if (skip > 0) {
             skip--;
@@ -168,7 +170,7 @@ public class ServiceProxy implements SnapshotListener {
             return skippedCache.poll().getValue();
         } else {
             currentRequest = request;
-            return service.execute(request.getValue(), nextSeqNo - 1);
+            return service.execute(request.getValue(), nextSeqNo - 1, isLeader);
         }
     }
 

@@ -16,7 +16,7 @@ public class SimplifiedMapService extends SimplifiedService {
 
     private HashMap<Long, Long> map = new HashMap<Long, Long>();
 
-    protected byte[] execute(byte[] value) {
+    protected byte[] execute(byte[] value, boolean isLeader) {
         logger.info("******** in execute method of SimplifiedMapService at time: " + System.currentTimeMillis() + " ********");
         MapServiceCommand command;
         try {

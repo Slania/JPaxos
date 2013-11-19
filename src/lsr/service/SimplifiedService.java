@@ -27,10 +27,12 @@ public abstract class SimplifiedService extends AbstractService {
      * Executes one command from client on this state machine. This method will
      * be called by {@link Replica}.
      * 
+     *
      * @param value - value of instance to execute on this service
+     * @param isLeader
      * @return generated reply which will be sent to client
      */
-    protected abstract byte[] execute(byte[] value);
+    protected abstract byte[] execute(byte[] value, boolean isLeader);
 
     /**
      * Makes snapshot for current state of <code>Service</code>.
@@ -51,9 +53,9 @@ public abstract class SimplifiedService extends AbstractService {
      */
     protected abstract void updateToSnapshot(byte[] snapshot);
 
-    public final byte[] execute(byte[] value, int seqNo) {
+    public final byte[] execute(byte[] value, int seqNo, boolean isLeader) {
         lastExecutedSeq = seqNo;
-        return execute(value);
+        return execute(value, isLeader);
     }
 
     public final void askForSnapshot(int lastNextSeq) {

@@ -42,9 +42,9 @@ public class ServiceProxyTest {
     @Test
     public void shouldExecuteSingleRequestOnService() {
         Request request = new Request(new RequestId(0, 0), new byte[] {1, 2, 3});
-        serviceProxy.execute(request);
+        serviceProxy.execute(request, false);
 
-        verify(service).execute(new byte[] {1, 2, 3}, 0);
+        verify(service).execute(new byte[] {1, 2, 3}, 0, isLeader);
     }
 
     @Test
@@ -52,13 +52,13 @@ public class ServiceProxyTest {
         Request request2 = new Request(new RequestId(2, 2), new byte[] {2});
         Request request1 = new Request(new RequestId(1, 1), new byte[] {1});
 
-        serviceProxy.execute(request1);
+        serviceProxy.execute(request1, false);
         serviceProxy.instanceExecuted(0);
-        serviceProxy.execute(request2);
+        serviceProxy.execute(request2, false);
         serviceProxy.instanceExecuted(1);
 
-        verify(service).execute(new byte[] {1}, 0);
-        verify(service).execute(new byte[] {2}, 1);
+        verify(service).execute(new byte[] {1}, 0, isLeader);
+        verify(service).execute(new byte[] {2}, 1, isLeader);
     }
 
     @Test
@@ -88,16 +88,16 @@ public class ServiceProxyTest {
 
         serviceProxy.updateToSnapshot(snapshot);
         verify(service).updateToSnapshot(7, snapshot.getValue());
-        byte[] skipped1 = serviceProxy.execute(RequestGenerator.generate());
-        byte[] skipped2 = serviceProxy.execute(RequestGenerator.generate());
+        byte[] skipped1 = serviceProxy.execute(RequestGenerator.generate(), false);
+        byte[] skipped2 = serviceProxy.execute(RequestGenerator.generate(), false);
 
         assertArrayEquals(reply1.getValue(), skipped1);
         assertArrayEquals(reply2.getValue(), skipped2);
-        verify(service, never()).execute(any(byte[].class), anyInt());
+        verify(service, never()).execute(any(byte[].class), anyInt(), isLeader);
 
         Request firstExecuted = RequestGenerator.generate();
-        serviceProxy.execute(firstExecuted);
-        verify(service).execute(firstExecuted.getValue(), 7);
+        serviceProxy.execute(firstExecuted, false);
+        verify(service).execute(firstExecuted.getValue(), 7, isLeader);
     }
 
     @Test
@@ -157,16 +157,16 @@ public class ServiceProxyTest {
 
     @Test
     public void shouldHandleSnapshotFromService() {
-        serviceProxy.execute(RequestGenerator.generate());
-        serviceProxy.execute(RequestGenerator.generate());
-        serviceProxy.execute(RequestGenerator.generate());
+        serviceProxy.execute(RequestGenerator.generate(), false);
+        serviceProxy.execute(RequestGenerator.generate(), false);
+        serviceProxy.execute(RequestGenerator.generate(), false);
         serviceProxy.instanceExecuted(0);
-        serviceProxy.execute(RequestGenerator.generate());
-        serviceProxy.execute(RequestGenerator.generate());
+        serviceProxy.execute(RequestGenerator.generate(), false);
+        serviceProxy.execute(RequestGenerator.generate(), false);
         serviceProxy.instanceExecuted(1);
-        serviceProxy.execute(RequestGenerator.generate());
-        serviceProxy.execute(RequestGenerator.generate());
-        serviceProxy.execute(RequestGenerator.generate());
+        serviceProxy.execute(RequestGenerator.generate(), false);
+        serviceProxy.execute(RequestGenerator.generate(), false);
+        serviceProxy.execute(RequestGenerator.generate(), false);
         responsesCache.put(2, Arrays.asList(ReplyGenerator.generate(), ReplyGenerator.generate(),
                 ReplyGenerator.generate()));
         SnapshotListener2 snapshotListener2 = mock(SnapshotListener2.class);
@@ -187,16 +187,16 @@ public class ServiceProxyTest {
 
     @Test
     public void shouldHandleSnapshotFromServiceAfterInstanceIsExecuted() {
-        serviceProxy.execute(RequestGenerator.generate());
-        serviceProxy.execute(RequestGenerator.generate());
-        serviceProxy.execute(RequestGenerator.generate());
+        serviceProxy.execute(RequestGenerator.generate(), false);
+        serviceProxy.execute(RequestGenerator.generate(), false);
+        serviceProxy.execute(RequestGenerator.generate(), false);
         serviceProxy.instanceExecuted(0);
-        serviceProxy.execute(RequestGenerator.generate());
-        serviceProxy.execute(RequestGenerator.generate());
+        serviceProxy.execute(RequestGenerator.generate(), false);
+        serviceProxy.execute(RequestGenerator.generate(), false);
         serviceProxy.instanceExecuted(1);
-        serviceProxy.execute(RequestGenerator.generate());
-        serviceProxy.execute(RequestGenerator.generate());
-        serviceProxy.execute(RequestGenerator.generate());
+        serviceProxy.execute(RequestGenerator.generate(), false);
+        serviceProxy.execute(RequestGenerator.generate(), false);
+        serviceProxy.execute(RequestGenerator.generate(), false);
         serviceProxy.instanceExecuted(2);
         SnapshotListener2 snapshotListener2 = mock(SnapshotListener2.class);
         serviceProxy.addSnapshotListener(snapshotListener2);
@@ -216,21 +216,21 @@ public class ServiceProxyTest {
 
     @Test
     public void shouldHandleSnapshotFromServiceCalledWithinExecuteMethod() {
-        serviceProxy.execute(RequestGenerator.generate());
-        serviceProxy.execute(RequestGenerator.generate());
-        serviceProxy.execute(RequestGenerator.generate());
+        serviceProxy.execute(RequestGenerator.generate(), false);
+        serviceProxy.execute(RequestGenerator.generate(), false);
+        serviceProxy.execute(RequestGenerator.generate(), false);
         serviceProxy.instanceExecuted(0);
-        serviceProxy.execute(RequestGenerator.generate());
-        serviceProxy.execute(RequestGenerator.generate());
+        serviceProxy.execute(RequestGenerator.generate(), false);
+        serviceProxy.execute(RequestGenerator.generate(), false);
         serviceProxy.instanceExecuted(1);
-        serviceProxy.execute(RequestGenerator.generate());
-        serviceProxy.execute(RequestGenerator.generate());
+        serviceProxy.execute(RequestGenerator.generate(), false);
+        serviceProxy.execute(RequestGenerator.generate(), false);
         SnapshotListener2 snapshotListener2 = mock(SnapshotListener2.class);
         serviceProxy.addSnapshotListener(snapshotListener2);
         responsesCache.put(2, Arrays.asList(ReplyGenerator.generate(), ReplyGenerator.generate()));
 
         Request lastRequest = RequestGenerator.generate();
-        serviceProxy.execute(lastRequest);
+        serviceProxy.execute(lastRequest, false);
         serviceProxy.onSnapshotMade(8, new byte[] {1, 2, 3}, new byte[] {1, 2, 3, 4});
         executeDispatcher();
 
@@ -246,16 +246,16 @@ public class ServiceProxyTest {
 
     @Test
     public void shouldHandleSnapshotFromPast() {
-        serviceProxy.execute(RequestGenerator.generate());
-        serviceProxy.execute(RequestGenerator.generate());
-        serviceProxy.execute(RequestGenerator.generate());
+        serviceProxy.execute(RequestGenerator.generate(), false);
+        serviceProxy.execute(RequestGenerator.generate(), false);
+        serviceProxy.execute(RequestGenerator.generate(), false);
         serviceProxy.instanceExecuted(0);
-        serviceProxy.execute(RequestGenerator.generate());
-        serviceProxy.execute(RequestGenerator.generate());
+        serviceProxy.execute(RequestGenerator.generate(), false);
+        serviceProxy.execute(RequestGenerator.generate(), false);
         serviceProxy.instanceExecuted(1);
-        serviceProxy.execute(RequestGenerator.generate());
-        serviceProxy.execute(RequestGenerator.generate());
-        serviceProxy.execute(RequestGenerator.generate());
+        serviceProxy.execute(RequestGenerator.generate(), false);
+        serviceProxy.execute(RequestGenerator.generate(), false);
+        serviceProxy.execute(RequestGenerator.generate(), false);
         serviceProxy.instanceExecuted(2);
         SnapshotListener2 snapshotListener2 = mock(SnapshotListener2.class);
         serviceProxy.addSnapshotListener(snapshotListener2);
@@ -302,16 +302,16 @@ public class ServiceProxyTest {
 
     @Test
     public void shouldUpdateToSnapshotFromBeforeLastExecuted() {
-        serviceProxy.execute(RequestGenerator.generate());
-        serviceProxy.execute(RequestGenerator.generate());
-        serviceProxy.execute(RequestGenerator.generate());
+        serviceProxy.execute(RequestGenerator.generate(), false);
+        serviceProxy.execute(RequestGenerator.generate(), false);
+        serviceProxy.execute(RequestGenerator.generate(), false);
         serviceProxy.instanceExecuted(0);
-        serviceProxy.execute(RequestGenerator.generate());
-        serviceProxy.execute(RequestGenerator.generate());
+        serviceProxy.execute(RequestGenerator.generate(), false);
+        serviceProxy.execute(RequestGenerator.generate(), false);
         serviceProxy.instanceExecuted(1);
-        serviceProxy.execute(RequestGenerator.generate());
-        serviceProxy.execute(RequestGenerator.generate());
-        serviceProxy.execute(RequestGenerator.generate());
+        serviceProxy.execute(RequestGenerator.generate(), false);
+        serviceProxy.execute(RequestGenerator.generate(), false);
+        serviceProxy.execute(RequestGenerator.generate(), false);
         serviceProxy.instanceExecuted(2);
 
         Snapshot snapshot = new Snapshot();
