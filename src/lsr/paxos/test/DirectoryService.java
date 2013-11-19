@@ -34,7 +34,7 @@ public class DirectoryService extends SimplifiedService {
 
         logger.info(command.toString());
         try {
-            dataOutput.writeChars(command.toString());
+            dataOutput.write(command.toString().getBytes());
         } catch (IOException e) {
             e.printStackTrace();
             return null;

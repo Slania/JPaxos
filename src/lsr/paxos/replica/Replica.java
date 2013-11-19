@@ -319,7 +319,6 @@ public class Replica {
             cache.add(reply);
 
             executedRequests.put(rID.getClientId(), reply);
-            logger.info(new String(reply.getValue()));
             // Can this ever be null?
             assert requestManager != null : "Request manager should not be null";
             requestManager.onRequestExecuted(cRequest, reply);
