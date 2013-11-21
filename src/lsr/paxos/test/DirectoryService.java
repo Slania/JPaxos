@@ -39,14 +39,14 @@ public class DirectoryService extends SimplifiedService {
             e.printStackTrace();
             return null;
         }
-        if (isLeader) {
-            try {
-                connectTo();
-                output.write(command.getObjectId());
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
+//        if (isLeader) {
+//            try {
+//                connectTo();
+//                output.write(command.getObjectId());
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
+//        }
 
         return byteArrayOutput.toByteArray();
     }
