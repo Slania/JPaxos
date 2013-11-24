@@ -1,9 +1,11 @@
 package lsr.paxos.test;
 
 import lsr.service.SimplifiedService;
+import org.joda.time.DateTime;
 
 import java.io.*;
 import java.net.Socket;
+import java.sql.*;
 import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -11,8 +13,6 @@ import java.util.logging.Logger;
 public class DirectoryService extends SimplifiedService {
 
     private Socket socket;
-    private DataOutputStream output;
-    private DataInputStream input;
 
     private HashMap<DirectoryServiceCommand, Boolean> map = new HashMap<DirectoryServiceCommand, Boolean>();
 
@@ -33,6 +33,29 @@ public class DirectoryService extends SimplifiedService {
         DataOutputStream dataOutput = new DataOutputStream(byteArrayOutput);
 
         logger.info(command.toString());
+
+        Connection connection = null;
+        PreparedStatement preparedStatement = null;
+
+        String url = "jdbc:postgresql://128.46.76.108/paxos";
+        String user = "postgres";
+        String password = "password";
+
+        try {
+            connection = DriverManager.getConnection(url, user, password);
+            String sql = "INSERT INTO migrations(object_id, old_replica_set, new_replica_set, migration_complete, creation_time) VALUES(?, ?, ?, ?, ?)";
+            preparedStatement = connection.prepareStatement(sql);
+            preparedStatement.setString(1, new String(command.getObjectId()));
+            preparedStatement.setString(2, command.getOldReplicaSetAsCsv());
+            preparedStatement.setString(3, command.getNewReplicaSetAsCsv());
+            preparedStatement.setBoolean(4, command.isMigrationComplete());
+            preparedStatement.setTimestamp(4, Timestamp.valueOf(DateTime.now().toString()));
+            preparedStatement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
+        }
+
         try {
             dataOutput.write(command.toString().getBytes());
         } catch (IOException e) {
@@ -91,8 +114,8 @@ public class DirectoryService extends SimplifiedService {
         socket.setSoTimeout(3000);
         socket.setReuseAddress(true);
         socket.setTcpNoDelay(true);
-        output = new DataOutputStream(socket.getOutputStream());
-        input = new DataInputStream(socket.getInputStream());
+        DataOutputStream output = new DataOutputStream(socket.getOutputStream());
+        DataInputStream input = new DataInputStream(socket.getInputStream());
 
         logger.info("*****" + "Connected to localhost directory service" + "*****");
     }

@@ -13,6 +13,7 @@ import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -59,8 +60,27 @@ public class DirectoryProtocol {
         ByteBuffer bb = ByteBuffer.allocate(command.byteSize());
         command.writeTo(bb);
         bb.flip();
+        Connection connection = null;
+        PreparedStatement preparedStatement = null;
+        ResultSet rs = null;
+
+        String url = "jdbc:postgresql://128.46.76.108/paxos";
+        String user = "postgres";
+        String password = "password";
+        String sql = "SELECT object_id, old_replica_set, new_replica_set, migration_acks FROM migrations where migration_complete = 'false' limit 10";
 
         while (true) {
+            try {
+                connection = DriverManager.getConnection(url, user, password);
+                preparedStatement = connection.prepareStatement(sql);
+                break;
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        while (true) {
+            rs = null;
 //            SocketChannel socketChannel = null;
 //            try {
 //                socketChannel = serverSocketChannel.accept();
@@ -83,9 +103,30 @@ public class DirectoryProtocol {
 
             ClientReply clientReply = new ClientReply(input);
 
+            try {
+                rs = preparedStatement.executeQuery();
+                while (rs.next()) {
+                    System.out.print(rs.getString(1));
+                    System.out.print(": ");
+                    System.out.println(rs.getString(2));
+                    System.out.print("--->");
+                    System.out.println(rs.getString(3));
+                    System.out.print(".Progress: ");
+                    System.out.println(rs.getString(4));
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+
             if (clientReply.getResult().equals(ClientReply.Result.OK)) {
                 isLeader = clientReply.getValue()[0] == 1;
                 logger.info("*******" + processes.get(localId).getHostname() + " is leader? " + isLeader);
+            }
+
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
         }
     }

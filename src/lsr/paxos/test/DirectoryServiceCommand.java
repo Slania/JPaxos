@@ -76,6 +76,29 @@ public class DirectoryServiceCommand implements Serializable {
         return newReplicaSet;
     }
 
+    public String getOldReplicaSetAsCsv() {
+        StringBuilder builder = new StringBuilder();
+
+        for (Integer integer : oldReplicaSet) {
+            builder.append(integer.toString());
+            builder.append(",");
+        }
+        builder.deleteCharAt(builder.length() - 1);
+        return builder.toString();
+    }
+
+    public String getNewReplicaSetAsCsv() {
+        StringBuilder builder = new StringBuilder();
+
+        builder = new StringBuilder();
+        for (Integer integer : newReplicaSet) {
+            builder.append(integer.toString());
+            builder.append(",");
+        }
+        builder.deleteCharAt(builder.length() - 1);
+        return builder.toString();
+    }
+
     public DirectoryCommandType getDirectoryCommandType() {
         return directoryCommandType;
     }
@@ -110,26 +133,7 @@ public class DirectoryServiceCommand implements Serializable {
     }
 
     public String toString() {
-        StringBuilder builder = new StringBuilder();
-        String csvOldReplicas;
-        String csvNewReplicas;
-
-        for (Integer integer : oldReplicaSet) {
-            builder.append(integer.toString());
-            builder.append(",");
-        }
-        builder.deleteCharAt(builder.length() - 1);
-        csvOldReplicas = builder.toString();
-
-        builder = new StringBuilder();
-        for (Integer integer : newReplicaSet) {
-            builder.append(integer.toString());
-            builder.append(",");
-        }
-        builder.deleteCharAt(builder.length() - 1);
-        csvNewReplicas = builder.toString();
-
-        return "Object " + new String(objectId) + " migrating from " + csvOldReplicas + " to " + csvNewReplicas + ". Migration status: " + migrationComplete;
+        return "Object " + new String(objectId) + " migrating from " + getOldReplicaSetAsCsv() + " to " + getNewReplicaSetAsCsv() + ". Migration status: " + migrationComplete;
     }
 
     @Override
