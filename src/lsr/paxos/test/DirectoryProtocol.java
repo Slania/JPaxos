@@ -64,7 +64,7 @@ public class DirectoryProtocol {
         PreparedStatement preparedStatement = null;
         ResultSet rs = null;
 
-        String url = "jdbc:postgresql://128.46.76.108/paxos";
+        String url = "jdbc:postgresql://" + configuration.getProperty("db" + localId);
         String user = "postgres";
         String password = "password";
         String sql = "SELECT object_id, old_replica_set, new_replica_set, migration_acks FROM migrations where migration_complete = 'false' limit 10";

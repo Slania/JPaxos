@@ -1,5 +1,6 @@
 package lsr.paxos.test;
 
+import lsr.common.ProcessDescriptor;
 import lsr.service.SimplifiedService;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
@@ -9,6 +10,7 @@ import java.io.*;
 import java.net.Socket;
 import java.sql.*;
 import java.util.HashMap;
+import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -16,9 +18,19 @@ public class DirectoryService extends SimplifiedService {
 
     private Socket socket;
 
+    private final Properties configuration = new Properties();
+
     private HashMap<DirectoryServiceCommand, Boolean> map = new HashMap<DirectoryServiceCommand, Boolean>();
 
     protected byte[] execute(byte[] value, boolean isLeader) {
+        FileInputStream fis = null;
+        try {
+            fis = new FileInputStream("paxos.properties");
+            configuration.load(fis);
+            fis.close();
+        } catch (IOException e) {
+        }
+
         logger.info("******** in execute method of DirectoryService at time: " + System.currentTimeMillis() + " ********");
         DirectoryServiceCommand command;
         try {
@@ -39,7 +51,7 @@ public class DirectoryService extends SimplifiedService {
         Connection connection = null;
         PreparedStatement preparedStatement = null;
 
-        String url = "jdbc:postgresql://128.46.76.108/paxos";
+        String url = "jdbc:postgresql://" + configuration.getProperty("db" + ProcessDescriptor.getInstance().localId);
         String user = "postgres";
         String password = "password";
 
