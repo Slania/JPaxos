@@ -2,6 +2,8 @@ package lsr.paxos.test;
 
 import lsr.service.SimplifiedService;
 import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 
 import java.io.*;
 import java.net.Socket;
@@ -49,7 +51,7 @@ public class DirectoryService extends SimplifiedService {
             preparedStatement.setString(2, command.getOldReplicaSetAsCsv());
             preparedStatement.setString(3, command.getNewReplicaSetAsCsv());
             preparedStatement.setBoolean(4, command.isMigrationComplete());
-            preparedStatement.setTimestamp(4, Timestamp.valueOf(DateTime.now().toString()));
+            preparedStatement.setTimestamp(4, Timestamp.valueOf(DateTime.now().toString(DateTimeFormat.forPattern("yyyy-MM-dd kk:mm:ss"))));
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
