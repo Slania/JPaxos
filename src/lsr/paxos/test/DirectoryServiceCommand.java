@@ -14,10 +14,12 @@ public class DirectoryServiceCommand implements Serializable {
     private List<Integer> newReplicaSet;
     private DirectoryCommandType directoryCommandType;
     private byte[] objectId;
+    private byte[] directoryNodeIP;
+    private int directoryNodePort;
     private boolean migrationComplete;
 
     public enum DirectoryCommandType {
-        INSERT, DELETE, READ, UPDATE
+        INSERT, DELETE, READ, UPDATE, REGISTER_DIRECTORY
     }
 
     public DirectoryServiceCommand(List<Integer> oldReplicaSet, List<Integer> newReplicaSet, DirectoryCommandType directoryCommandType, String objectId, boolean migrationComplete) {
@@ -26,6 +28,11 @@ public class DirectoryServiceCommand implements Serializable {
         this.directoryCommandType = directoryCommandType;
         this.migrationComplete = migrationComplete;
         this.objectId = objectId.getBytes();
+    }
+
+    public DirectoryServiceCommand(byte[] directoryNodeIP, int directoryNodePort) {
+        this.directoryNodeIP = directoryNodeIP;
+        this.directoryNodePort = directoryNodePort;
     }
 
     public DirectoryServiceCommand(List<Integer> oldReplicaSet, List<Integer> newReplicaSet, DirectoryCommandType directoryCommandType, String objectId) {
@@ -41,31 +48,39 @@ public class DirectoryServiceCommand implements Serializable {
         DataInputStream dataInput = new DataInputStream(new ByteArrayInputStream(bytes));
         this.directoryCommandType = DirectoryCommandType.values()[dataInput.readInt()];
         System.out.println("Directory Command Type: " + directoryCommandType.toString());
-        int objectIdLength = dataInput.readInt();
-        System.out.println("ObjectId Length: " + objectIdLength);
-        int oldReplicaSetSize = dataInput.readInt();
-        System.out.println("Old Replica Set Size: " + oldReplicaSetSize);
-        int newReplicaSetSize = dataInput.readInt();
-        System.out.println("New Replica Set Size: " + newReplicaSetSize);
-        objectId = new byte[objectIdLength];
-        dataInput.readFully(objectId, 0, objectIdLength);
-        System.out.println("Object Id: " + new String(objectId));
-        oldReplicaSet = new ArrayList<Integer>();
-        newReplicaSet = new ArrayList<Integer>();
-        if (oldReplicaSetSize > 0){
-            for (int i = 1; i <= oldReplicaSetSize; i++){
-                oldReplicaSet.add(dataInput.readInt());
+
+        if (directoryCommandType == DirectoryCommandType.REGISTER_DIRECTORY) {
+            int directoryIpLength = dataInput.readInt();
+            directoryNodeIP = new byte[directoryIpLength];
+            dataInput.readFully(directoryNodeIP, 0, directoryIpLength);
+            directoryNodePort = dataInput.readInt();
+        } else {
+            int objectIdLength = dataInput.readInt();
+            System.out.println("ObjectId Length: " + objectIdLength);
+            int oldReplicaSetSize = dataInput.readInt();
+            System.out.println("Old Replica Set Size: " + oldReplicaSetSize);
+            int newReplicaSetSize = dataInput.readInt();
+            System.out.println("New Replica Set Size: " + newReplicaSetSize);
+            objectId = new byte[objectIdLength];
+            dataInput.readFully(objectId, 0, objectIdLength);
+            System.out.println("Object Id: " + new String(objectId));
+            oldReplicaSet = new ArrayList<Integer>();
+            newReplicaSet = new ArrayList<Integer>();
+            if (oldReplicaSetSize > 0) {
+                for (int i = 1; i <= oldReplicaSetSize; i++) {
+                    oldReplicaSet.add(dataInput.readInt());
+                }
             }
-        }
-        System.out.println("Size of old replica list: " + oldReplicaSet.size());
-        if (newReplicaSetSize > 0){
-            for (int i = 1; i <= newReplicaSetSize; i++){
-                newReplicaSet.add(dataInput.readInt());
+            System.out.println("Size of old replica list: " + oldReplicaSet.size());
+            if (newReplicaSetSize > 0) {
+                for (int i = 1; i <= newReplicaSetSize; i++) {
+                    newReplicaSet.add(dataInput.readInt());
+                }
             }
+            System.out.println("Size of new replica list: " + newReplicaSet.size());
+            migrationComplete = dataInput.readByte() == 1;
+            System.out.println("Migration complete: " + migrationComplete);
         }
-        System.out.println("Size of new replica list: " + newReplicaSet.size());
-        migrationComplete = dataInput.readByte() == 1;
-        System.out.println("Migration complete: " + migrationComplete);
     }
 
     public List<Integer> getOldReplicaSet() {
@@ -74,6 +89,14 @@ public class DirectoryServiceCommand implements Serializable {
 
     public List<Integer> getNewReplicaSet() {
         return newReplicaSet;
+    }
+
+    public byte[] getDirectoryNodeIP() {
+        return directoryNodeIP;
+    }
+
+    public int getDirectoryNodePort() {
+        return directoryNodePort;
     }
 
     public String getOldReplicaSetAsCsv() {
@@ -112,24 +135,35 @@ public class DirectoryServiceCommand implements Serializable {
     }
 
     public byte[] toByteArray() {
-        //4 for the ordinal of the CommandType
-        int numOfBytes = 4 + (oldReplicaSet.size() * (Integer.SIZE / Byte.SIZE)) + (newReplicaSet.size() * (Integer.SIZE / Byte.SIZE)) + 1 + objectId.length;
-        //4 + 4 for the integer sizes of the 2 lists and the integer length of the byte array
-        numOfBytes += 4 + 4 + 4;
-        ByteBuffer buffer = ByteBuffer.allocate(numOfBytes);
-        buffer.putInt(directoryCommandType.ordinal());
-        buffer.putInt(objectId.length);
-        buffer.putInt(oldReplicaSet.size());
-        buffer.putInt(newReplicaSet.size());
-        buffer.put(objectId);
-        for (Integer integer : oldReplicaSet) {
-            buffer.putInt(integer);
+        if (directoryCommandType == DirectoryCommandType.REGISTER_DIRECTORY) {
+            //4 for the ordinal of the CommandType
+            int numOfBytes = 4 + directoryNodeIP.length + 4;
+            ByteBuffer buffer = ByteBuffer.allocate(numOfBytes);
+            buffer.putInt(directoryCommandType.ordinal());
+            buffer.putInt(directoryNodeIP.length);
+            buffer.put(directoryNodeIP);
+            buffer.putInt(directoryNodePort);
+            return buffer.array();
+        } else {
+            //4 for the ordinal of the CommandType
+            int numOfBytes = 4 + (oldReplicaSet.size() * (Integer.SIZE / Byte.SIZE)) + (newReplicaSet.size() * (Integer.SIZE / Byte.SIZE)) + 1 + objectId.length;
+            //4 + 4 for the integer sizes of the 2 lists and the integer length of the byte array
+            numOfBytes += 4 + 4 + 4;
+            ByteBuffer buffer = ByteBuffer.allocate(numOfBytes);
+            buffer.putInt(directoryCommandType.ordinal());
+            buffer.putInt(objectId.length);
+            buffer.putInt(oldReplicaSet.size());
+            buffer.putInt(newReplicaSet.size());
+            buffer.put(objectId);
+            for (Integer integer : oldReplicaSet) {
+                buffer.putInt(integer);
+            }
+            for (Integer integer : newReplicaSet) {
+                buffer.putInt(integer);
+            }
+            buffer.put((byte) (migrationComplete ? 1 : 0));
+            return buffer.array();
         }
-        for (Integer integer : newReplicaSet) {
-            buffer.putInt(integer);
-        }
-        buffer.put((byte) (migrationComplete ? 1 : 0));
-        return buffer.array();
     }
 
     public String toString() {

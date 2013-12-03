@@ -40,52 +40,86 @@ public class DirectoryService extends SimplifiedService {
             return null;
         }
 
-        Boolean migrationStatus = command.isMigrationComplete();
-        map.put(command, migrationStatus);
+        if (!command.getDirectoryCommandType().equals(DirectoryServiceCommand.DirectoryCommandType.REGISTER_DIRECTORY)) {
+            Boolean migrationStatus = command.isMigrationComplete();
+            map.put(command, migrationStatus);
 
-        ByteArrayOutputStream byteArrayOutput = new ByteArrayOutputStream();
-        DataOutputStream dataOutput = new DataOutputStream(byteArrayOutput);
+            ByteArrayOutputStream byteArrayOutput = new ByteArrayOutputStream();
+            DataOutputStream dataOutput = new DataOutputStream(byteArrayOutput);
 
-        logger.info(command.toString());
+            logger.info(command.toString());
 
-        Connection connection = null;
-        PreparedStatement preparedStatement = null;
+            Connection connection = null;
+            PreparedStatement preparedStatement = null;
 
-        String url = "jdbc:postgresql://" + configuration.getProperty("db" + ProcessDescriptor.getInstance().localId);
-        String user = "postgres";
-        String password = "password";
+            String url = "jdbc:postgresql://" + configuration.getProperty("db" + ProcessDescriptor.getInstance().localId);
+            String user = "postgres";
+            String password = "password";
 
-        try {
-            connection = DriverManager.getConnection(url, user, password);
-            String sql = "INSERT INTO migrations(object_id, old_replica_set, new_replica_set, migration_complete, creation_time) VALUES(?, ?, ?, ?, ?)";
-            preparedStatement = connection.prepareStatement(sql);
-            preparedStatement.setString(1, new String(command.getObjectId()));
-            preparedStatement.setString(2, command.getOldReplicaSetAsCsv());
-            preparedStatement.setString(3, command.getNewReplicaSetAsCsv());
-            preparedStatement.setBoolean(4, command.isMigrationComplete());
-            preparedStatement.setTimestamp(5, Timestamp.valueOf(DateTime.now().toString(DateTimeFormat.forPattern("yyyy-MM-dd kk:mm:ss"))));
-            preparedStatement.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return null;
+            try {
+                connection = DriverManager.getConnection(url, user, password);
+                String sql = "INSERT INTO migrations(object_id, old_replica_set, new_replica_set, migration_complete, creation_time) VALUES(?, ?, ?, ?, ?)";
+                preparedStatement = connection.prepareStatement(sql);
+                preparedStatement.setString(1, new String(command.getObjectId()));
+                preparedStatement.setString(2, command.getOldReplicaSetAsCsv());
+                preparedStatement.setString(3, command.getNewReplicaSetAsCsv());
+                preparedStatement.setBoolean(4, command.isMigrationComplete());
+                preparedStatement.setTimestamp(5, Timestamp.valueOf(DateTime.now().toString(DateTimeFormat.forPattern("yyyy-MM-dd kk:mm:ss"))));
+                preparedStatement.executeUpdate();
+            } catch (SQLException e) {
+                e.printStackTrace();
+                return null;
+            }
+
+            try {
+                dataOutput.write(command.toString().getBytes());
+            } catch (IOException e) {
+                e.printStackTrace();
+                return null;
+            }
+    //        if (isLeader) {
+    //            try {
+    //                connectTo();
+    //                output.write(command.getObjectId());
+    //            } catch (IOException e) {
+    //                e.printStackTrace();
+    //            }
+    //        }
+
+            return byteArrayOutput.toByteArray();
+        } else {
+            ByteArrayOutputStream byteArrayOutput = new ByteArrayOutputStream();
+            DataOutputStream dataOutput = new DataOutputStream(byteArrayOutput);
+
+            Connection connection = null;
+            PreparedStatement preparedStatement = null;
+
+            String url = "jdbc:postgresql://" + configuration.getProperty("db" + ProcessDescriptor.getInstance().localId);
+            String user = "postgres";
+            String password = "password";
+
+            try {
+                connection = DriverManager.getConnection(url, user, password);
+                String sql = "INSERT INTO directories(ip, port, time_stamp) VALUES(?, ?, ?)";
+                preparedStatement = connection.prepareStatement(sql);
+                preparedStatement.setString(1, new String(command.getDirectoryNodeIP()));
+                preparedStatement.setInt(2, command.getDirectoryNodePort());
+                preparedStatement.setTimestamp(3, Timestamp.valueOf(DateTime.now().toString(DateTimeFormat.forPattern("yyyy-MM-dd kk:mm:ss"))));
+                preparedStatement.executeUpdate();
+            } catch (SQLException e) {
+                e.printStackTrace();
+                return null;
+            }
+
+            try {
+                dataOutput.write("received directory command".getBytes());
+            } catch (IOException e) {
+                e.printStackTrace();
+                return null;
+            }
+
+            return byteArrayOutput.toByteArray();
         }
-
-        try {
-            dataOutput.write(command.toString().getBytes());
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
-        }
-//        if (isLeader) {
-//            try {
-//                connectTo();
-//                output.write(command.getObjectId());
-//            } catch (IOException e) {
-//                e.printStackTrace();
-//            }
-//        }
-
-        return byteArrayOutput.toByteArray();
     }
 
     protected byte[] makeSnapshot() {

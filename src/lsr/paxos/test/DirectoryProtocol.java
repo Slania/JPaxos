@@ -67,12 +67,14 @@ public class DirectoryProtocol {
         String url = "jdbc:postgresql://" + configuration.getProperty("db" + localId);
         String user = "postgres";
         String password = "password";
-        String sql = "SELECT object_id, old_replica_set, new_replica_set, migration_acks FROM migrations where migration_complete = 'false' limit 10";
+        String migrationsSql = "SELECT object_id, old_replica_set, new_replica_set, migration_acks FROM migrations where migration_complete = 'false' limit 10";
+        String directoriesSql = "SELECT * from directories where id not in (";
+        String emptyDirectoriesSql = "SELECT * from directories;";
 
         while (true) {
             try {
                 connection = DriverManager.getConnection(url, user, password);
-                preparedStatement = connection.prepareStatement(sql);
+                preparedStatement = connection.prepareStatement(migrationsSql);
                 break;
             } catch (Exception e) {
                 e.printStackTrace();
@@ -81,23 +83,6 @@ public class DirectoryProtocol {
 
         while (true) {
             rs = null;
-//            SocketChannel socketChannel = null;
-//            try {
-//                socketChannel = serverSocketChannel.accept();
-//            } catch (IOException e) {
-//                // TODO: probably too many open files exception,
-//                // but i don't know what to do then; is server socket channel valid
-//                // after throwing this exception?; if yes can we just ignore it and
-//                // wait for new connections?
-//                e.printStackTrace();
-//            }
-//
-//            if (socketChannel != null) {
-//                socketChannel.read(byteBuffer);
-//                String objectId = new String(byteBuffer.array());
-//                System.out.println("*******" + "Got string: " + objectId + "*******");
-//            }
-
             output.write(bb.array());
             output.flush();
 
@@ -113,6 +98,26 @@ public class DirectoryProtocol {
                     System.out.println(rs.getString(3));
                     System.out.print(".Progress: ");
                     System.out.println(rs.getString(4));
+
+                    if (rs.getString(4) != null) {
+                        String toBeTokenized = rs.getString(4);
+                        StringTokenizer stringTokenizer = new StringTokenizer(toBeTokenized, ",");
+                        while (stringTokenizer.hasMoreElements()) {
+                            directoriesSql += "?,";
+                        }
+                        directoriesSql += ");";
+                        preparedStatement = connection.prepareStatement(directoriesSql);
+                    } else {
+                        preparedStatement = connection.prepareStatement(emptyDirectoriesSql);
+                    }
+                    rs = preparedStatement.executeQuery();
+                    while (rs.next()) {
+                        System.out.println("Yet to contact directories:");
+                        System.out.println(rs.getInt(1));
+                        System.out.println(rs.getString(2));
+                        System.out.println(rs.getTimestamp(3));
+                        System.out.println("*********----------------------------*********");
+                    }
                 }
             } catch (SQLException e) {
                 e.printStackTrace();
