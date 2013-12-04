@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.net.*;
 import java.nio.ByteBuffer;
 import java.nio.channels.ServerSocketChannel;
+import java.nio.channels.SocketChannel;
 import java.sql.*;
 import java.util.*;
 import java.util.logging.Logger;
@@ -19,22 +20,14 @@ public class Directory {
 
     private ServerSocketChannel serverSocketChannel;
 
-    private long clientId = -1;
-
-    private int sequenceId = 0;
-
-    private final Properties configuration = new Properties();
-
-    private ByteBuffer byteBuffer = ByteBuffer.allocate(100);
-    private Socket potentialLeader;
-    private DataOutputStream output;
-    private DataInputStream input;
-    private boolean isLeader = false;
     private Client client;
+    private final ByteBuffer readBuffer = ByteBuffer.allocate(1024);
+
+    private HashMap<String, String> objectReplicaSetMap = new HashMap<String, String>();
 
     public void start(int port, String hostAddress) throws IOException, ReplicationException {
         serverSocketChannel = ServerSocketChannel.open();
-        InetSocketAddress address = new InetSocketAddress(1111);
+        InetSocketAddress address = new InetSocketAddress(hostAddress, port);
         serverSocketChannel.socket().bind(address);
         serverSocketChannel.configureBlocking(false);
 
@@ -46,6 +39,42 @@ public class Directory {
         ByteBuffer buffer = ByteBuffer.wrap(response);
         String status = new String(buffer.array());
         logger.info("*********" + status + "*********");
+
+        while (true) {
+            SocketChannel socketChannel = serverSocketChannel.accept();
+
+            if (socketChannel != null) {
+                int readBytes = socketChannel.read(readBuffer);
+
+                if (readBytes == 0) {
+                    break;
+                }
+
+                // EOF - that means that the other side close his socket, so we
+                // should close this connection too.
+                if (readBytes == -1) {
+                    socketChannel.close();
+                    return;
+                }
+
+                int objectIdLength = readBuffer.getInt();
+                int replicaSetLength = readBuffer.getInt();
+
+                byte[] objectId = new byte[objectIdLength];
+                byte[] replicaSet = new byte[replicaSetLength];
+
+                readBuffer.get(objectId);
+                readBuffer.get(replicaSet);
+
+                objectReplicaSetMap.put(new String(objectId), new String(replicaSet));
+
+                for (String object : objectReplicaSetMap.keySet()) {
+                    System.out.println("Contents of map:");
+                    System.out.println("Object: " + object + ", Replicas: " + objectReplicaSetMap.get(object));
+                }
+                System.out.println("********-------------------------------********");
+            }
+        }
     }
 
     public static void main(String[] args) throws IOException, ReplicationException, InterruptedException {

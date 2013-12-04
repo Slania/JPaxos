@@ -2,17 +2,14 @@ package lsr.paxos.test;
 
 import lsr.common.*;
 import lsr.paxos.ReplicationException;
-import lsr.paxos.statistics.ClientStats;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.nio.channels.ServerSocketChannel;
-import java.nio.channels.SocketChannel;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -32,24 +29,22 @@ public class DirectoryProtocol {
 
     private ByteBuffer byteBuffer = ByteBuffer.allocate(100);
     private Socket potentialLeader;
-    private DataOutputStream output;
-    private DataInputStream input;
+    private Socket directory;
+    private DataOutputStream leaderOutputStream;
+    private DataOutputStream directoryOutputStream;
+    private DataInputStream leaderInputStream;
+    private DataInputStream directoryInputStream;
     private boolean isLeader = false;
 
     public void start(int localId) throws IOException {
-        serverSocketChannel = ServerSocketChannel.open();
-        InetSocketAddress address = new InetSocketAddress(1111);
-        serverSocketChannel.socket().bind(address);
-        serverSocketChannel.configureBlocking(false);
-
         FileInputStream fis = new FileInputStream("paxos.properties");
         configuration.load(fis);
         fis.close();
 
         List<PID> processes = loadProcessList();
         potentialLeader = new Socket(processes.get(localId).getHostname(), processes.get(localId).getClientPort());
-        output = new DataOutputStream(potentialLeader.getOutputStream());
-        input = new DataInputStream(potentialLeader.getInputStream());
+        leaderOutputStream = new DataOutputStream(potentialLeader.getOutputStream());
+        leaderInputStream = new DataInputStream(potentialLeader.getInputStream());
 
         initConnection();
 
@@ -62,14 +57,14 @@ public class DirectoryProtocol {
         bb.flip();
         Connection connection = null;
         PreparedStatement preparedStatement = null;
-        ResultSet rs = null;
+        ResultSet rs1, rs2 = null;
 
         String url = "jdbc:postgresql://" + configuration.getProperty("db" + localId);
         String user = "postgres";
         String password = "password";
         String migrationsSql = "SELECT object_id, old_replica_set, new_replica_set, migration_acks FROM migrations where migration_complete = 'false' limit 10";
-        String directoriesSql = "SELECT * from directories where id not in (";
-        String emptyDirectoriesSql = "SELECT * from directories;";
+        String directoriesSql = "SELECT id, ip, port from directories where id not in (";
+        String emptyDirectoriesSql = "SELECT id, ip, port from directories";
 
         while (true) {
             try {
@@ -82,50 +77,80 @@ public class DirectoryProtocol {
         }
 
         while (true) {
-            rs = null;
-            output.write(bb.array());
-            output.flush();
+            rs1 = null;
+            rs2 = null;
 
-            ClientReply clientReply = new ClientReply(input);
 
-            try {
-                rs = preparedStatement.executeQuery();
-                while (rs.next()) {
-                    System.out.print(rs.getString(1));
-                    System.out.print(": ");
-                    System.out.println(rs.getString(2));
-                    System.out.print("--->");
-                    System.out.println(rs.getString(3));
-                    System.out.print(".Progress: ");
-                    System.out.println(rs.getString(4));
+            leaderOutputStream.write(bb.array());
+            leaderOutputStream.flush();
 
-                    if (rs.getString(4) != null) {
-                        String toBeTokenized = rs.getString(4);
-                        StringTokenizer stringTokenizer = new StringTokenizer(toBeTokenized, ",");
-                        while (stringTokenizer.hasMoreElements()) {
-                            directoriesSql += "?,";
-                        }
-                        directoriesSql += ");";
-                        preparedStatement = connection.prepareStatement(directoriesSql);
-                    } else {
-                        preparedStatement = connection.prepareStatement(emptyDirectoriesSql);
-                    }
-                    rs = preparedStatement.executeQuery();
-                    while (rs.next()) {
-                        System.out.println("Yet to contact directories:");
-                        System.out.println(rs.getInt(1));
-                        System.out.println(rs.getString(2));
-                        System.out.println(rs.getTimestamp(3));
-                        System.out.println("*********----------------------------*********");
-                    }
-                }
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
+            ClientReply clientReply = new ClientReply(leaderInputStream);
 
             if (clientReply.getResult().equals(ClientReply.Result.OK)) {
                 isLeader = clientReply.getValue()[0] == 1;
                 logger.info("*******" + processes.get(localId).getHostname() + " is leader? " + isLeader);
+                try {
+                    rs1 = preparedStatement.executeQuery();
+                    while (rs1.next()) {
+                        String objectId = rs1.getString(1);
+                        System.out.print(objectId);
+                        System.out.print(": ");
+                        System.out.println(rs1.getString(2));
+                        System.out.print("--->");
+                        String oldReplicaSet = rs1.getString(3);
+                        System.out.println(oldReplicaSet);
+                        System.out.print(".Progress: ");
+                        System.out.println(rs1.getString(4));
+
+                        if (rs1.getString(4) != null) {
+                            String toBeTokenized = rs1.getString(4);
+                            StringTokenizer stringTokenizer = new StringTokenizer(toBeTokenized, ",");
+                            while (stringTokenizer.hasMoreElements()) {
+                                directoriesSql += "?,";
+                            }
+                            directoriesSql += ")";
+                            preparedStatement = connection.prepareStatement(directoriesSql);
+                        } else {
+                            preparedStatement = connection.prepareStatement(emptyDirectoriesSql);
+                        }
+                        rs2 = preparedStatement.executeQuery();
+                        System.out.println("Yet to contact directories:");
+
+                        boolean empty = true;
+                        while (rs2.next()) {
+                            empty = false;
+                            int directoryId = rs2.getInt(1);
+                            System.out.println(directoryId);
+                            String directoryIP = rs2.getString(2);
+                            System.out.println(directoryIP);
+                            int directoryPort = rs2.getInt(3);
+                            System.out.println(directoryPort);
+                            System.out.println("*********----------------------------*********");
+
+                            directory = new Socket(directoryIP, directoryPort);
+                            directoryOutputStream = new DataOutputStream(directory.getOutputStream());
+                            directoryInputStream = new DataInputStream(directory.getInputStream());
+
+                            ByteBuffer bb = ByteBuffer.allocate(4 + 4 + objectId.getBytes().length + oldReplicaSet.getBytes().length);
+                            bb.putInt(objectId.getBytes().length);
+                            bb.putInt(oldReplicaSet.getBytes().length);
+                            bb.put(objectId.getBytes());
+                            bb.put(oldReplicaSet.getBytes());
+                        }
+
+                        if (empty) {
+                            String sql = "UPDATE migrations SET migration_complete = 'TRUE' where object_id = ?";
+                            preparedStatement = connection.prepareStatement(sql);
+                            preparedStatement.setString(1, objectId);
+                            preparedStatement.executeUpdate();
+                        }
+
+                    }
+                    rs1.close();
+                    rs2.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
             }
 
             try {
@@ -155,15 +180,16 @@ public class DirectoryProtocol {
 
     private void initConnection() throws IOException {
         if (clientId == -1) {
-            output.write('T'); // True
-            output.flush();
-            clientId = input.readLong();
+            leaderOutputStream.write('T'); // True
+            leaderOutputStream.flush();
+            clientId = leaderInputStream.readLong();
         } else {
-            output.write('F'); // False
-            output.writeLong(clientId);
-            output.flush();
+            leaderOutputStream.write('F'); // False
+            leaderOutputStream.writeLong(clientId);
+            leaderOutputStream.flush();
         }
     }
+
     private RequestId nextRequestId() {
         return new RequestId(clientId, ++sequenceId);
     }
