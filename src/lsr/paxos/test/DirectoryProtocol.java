@@ -27,7 +27,6 @@ public class DirectoryProtocol {
 
     private final Properties configuration = new Properties();
 
-    private ByteBuffer byteBuffer = ByteBuffer.allocate(100);
     private Socket potentialLeader;
     private Socket directory;
     private DataOutputStream leaderOutputStream;
@@ -131,11 +130,15 @@ public class DirectoryProtocol {
                             directoryOutputStream = new DataOutputStream(directory.getOutputStream());
                             directoryInputStream = new DataInputStream(directory.getInputStream());
 
-                            ByteBuffer bb = ByteBuffer.allocate(4 + 4 + objectId.getBytes().length + oldReplicaSet.getBytes().length);
+                            ByteBuffer buffer = ByteBuffer.allocate(4 + 4 + objectId.getBytes().length + oldReplicaSet.getBytes().length);
                             bb.putInt(objectId.getBytes().length);
                             bb.putInt(oldReplicaSet.getBytes().length);
                             bb.put(objectId.getBytes());
                             bb.put(oldReplicaSet.getBytes());
+                            buffer.flip();
+
+                            directoryOutputStream.write(buffer.array());
+                            directoryOutputStream.flush();
                         }
 
                         if (empty) {
