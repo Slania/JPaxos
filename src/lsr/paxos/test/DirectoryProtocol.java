@@ -139,6 +139,8 @@ public class DirectoryProtocol {
 
                             directoryOutputStream.write(buffer.array());
                             directoryOutputStream.flush();
+
+                            directoryInputStream.readInt();
                         }
 
                         if (empty) {

@@ -73,6 +73,12 @@ public class Directory {
                     System.out.println("Object: " + object + ", Replicas: " + objectReplicaSetMap.get(object));
                 }
                 System.out.println("********-------------------------------********");
+
+                byte[] ok = new byte[1];
+                ok[0] = 1;
+                ByteBuffer wrap = ByteBuffer.wrap(ok);
+                wrap.flip();
+                socketChannel.write(wrap);
             }
         }
     }
