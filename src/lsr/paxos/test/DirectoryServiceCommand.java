@@ -138,7 +138,7 @@ public class DirectoryServiceCommand implements Serializable {
     public byte[] toByteArray() {
         if (directoryCommandType == DirectoryCommandType.REGISTER_DIRECTORY) {
             //4 for the ordinal of the CommandType
-            int numOfBytes = 4 + directoryNodeIP.length + 4;
+            int numOfBytes = 4 + 4 + directoryNodeIP.length + 4;
             ByteBuffer buffer = ByteBuffer.allocate(numOfBytes);
             buffer.putInt(directoryCommandType.ordinal());
             buffer.putInt(directoryNodeIP.length);
