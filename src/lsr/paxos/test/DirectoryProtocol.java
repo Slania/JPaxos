@@ -98,12 +98,12 @@ public class DirectoryProtocol {
                         System.out.println(oldReplicaSet);
                         System.out.print("--->");
                         String newReplicaSet = rs1.getString(3);
-                        System.out.println(oldReplicaSet);
+                        System.out.println(newReplicaSet);
                         System.out.print(".Progress: ");
                         String migrationAcks = rs1.getString(4);
-                        System.out.println(newReplicaSet);
+                        System.out.println(migrationAcks);
 
-                        if (newReplicaSet != null) {
+                        if (migrationAcks != null) {
                             StringTokenizer stringTokenizer = new StringTokenizer(newReplicaSet, ",");
                             while (stringTokenizer.hasMoreElements()) {
                                 directoriesSql += "?,";
