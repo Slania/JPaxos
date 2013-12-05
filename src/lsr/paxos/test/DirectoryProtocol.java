@@ -94,21 +94,28 @@ public class DirectoryProtocol {
                         String objectId = rs1.getString(1);
                         System.out.print(objectId);
                         System.out.print(": ");
-                        System.out.println(rs1.getString(2));
+                        String oldReplicaSet = rs1.getString(2);
+                        System.out.println(oldReplicaSet);
                         System.out.print("--->");
-                        String oldReplicaSet = rs1.getString(3);
+                        String newReplicaSet = rs1.getString(3);
                         System.out.println(oldReplicaSet);
                         System.out.print(".Progress: ");
-                        System.out.println(rs1.getString(4));
+                        String migrationAcks = rs1.getString(4);
+                        System.out.println(newReplicaSet);
 
-                        if (rs1.getString(4) != null) {
-                            String toBeTokenized = rs1.getString(4);
-                            StringTokenizer stringTokenizer = new StringTokenizer(toBeTokenized, ",");
+                        if (newReplicaSet != null) {
+                            StringTokenizer stringTokenizer = new StringTokenizer(newReplicaSet, ",");
                             while (stringTokenizer.hasMoreElements()) {
                                 directoriesSql += "?,";
                             }
                             directoriesSql += ")";
                             preparedStatement = connection.prepareStatement(directoriesSql);
+                            int index = 1;
+                            stringTokenizer = new StringTokenizer(newReplicaSet, ",");
+                            while (stringTokenizer.hasMoreElements()) {
+                                preparedStatement.setInt(index, (Integer) stringTokenizer.nextElement());
+                                index++;
+                            }
                         } else {
                             preparedStatement = connection.prepareStatement(emptyDirectoriesSql);
                         }
@@ -140,7 +147,20 @@ public class DirectoryProtocol {
                             directoryOutputStream.write(buffer.array());
                             directoryOutputStream.flush();
 
-                            directoryInputStream.readInt();
+                            byte ack = directoryInputStream.readByte();
+
+                            if (ack == 1) {
+                                if (migrationAcks != null && migrationAcks.contains(",")) {
+                                    migrationAcks += "," + directoryId;
+                                } else {
+                                    migrationAcks  += directoryId;
+                                }
+                                String sql = "UPDATE migrations SET migration_acks = ? where object_id = ?";
+                                preparedStatement = connection.prepareStatement(sql);
+                                preparedStatement.setString(1, newReplicaSet);
+                                preparedStatement.setString(2, objectId);
+                                preparedStatement.executeUpdate();
+                            }
                         }
 
                         if (empty) {
@@ -149,7 +169,6 @@ public class DirectoryProtocol {
                             preparedStatement.setString(1, objectId);
                             preparedStatement.executeUpdate();
                         }
-
                     }
                     rs1.close();
                     rs2.close();
