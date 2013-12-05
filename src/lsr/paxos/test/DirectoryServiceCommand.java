@@ -33,6 +33,7 @@ public class DirectoryServiceCommand implements Serializable {
     public DirectoryServiceCommand(byte[] directoryNodeIP, int directoryNodePort) {
         this.directoryNodeIP = directoryNodeIP;
         this.directoryNodePort = directoryNodePort;
+        this.directoryCommandType = DirectoryCommandType.REGISTER_DIRECTORY;
     }
 
     public DirectoryServiceCommand(List<Integer> oldReplicaSet, List<Integer> newReplicaSet, DirectoryCommandType directoryCommandType, String objectId) {
