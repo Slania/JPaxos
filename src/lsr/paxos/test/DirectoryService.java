@@ -4,7 +4,6 @@ import lsr.common.ProcessDescriptor;
 import lsr.service.SimplifiedService;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
-import org.joda.time.format.DateTimeFormatter;
 
 import java.io.*;
 import java.net.Socket;
@@ -29,6 +28,7 @@ public class DirectoryService extends SimplifiedService {
             configuration.load(fis);
             fis.close();
         } catch (IOException e) {
+            logger.info(e.getMessage());
         }
 
         logger.info("******** in execute method of DirectoryService at time: " + System.currentTimeMillis() + " ********");
