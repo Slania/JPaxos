@@ -53,6 +53,7 @@ public class DirectoryService extends SimplifiedService {
             PreparedStatement preparedStatement = null;
 
             logger.info(String.valueOf(ProcessDescriptor.getInstance().localId));
+            logger.info("db" + ProcessDescriptor.getInstance().localId);
             logger.info(configuration.getProperty("db" + ProcessDescriptor.getInstance().localId));
             String url = "jdbc:postgresql://" + configuration.getProperty("db" + ProcessDescriptor.getInstance().localId);
             String user = "postgres";
