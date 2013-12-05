@@ -28,7 +28,6 @@ public class DirectoryService extends SimplifiedService {
             configuration.load(fis);
             fis.close();
         } catch (IOException e) {
-            logger.info(e.getMessage());
         }
 
         logger.info("******** in execute method of DirectoryService at time: " + System.currentTimeMillis() + " ********");
@@ -52,10 +51,7 @@ public class DirectoryService extends SimplifiedService {
             Connection connection = null;
             PreparedStatement preparedStatement = null;
 
-            logger.info(String.valueOf(ProcessDescriptor.getInstance().localId));
-            logger.info("db" + ProcessDescriptor.getInstance().localId);
-            logger.info(configuration.getProperty("db" + ProcessDescriptor.getInstance().localId));
-            String url = "jdbc:postgresql://" + configuration.getProperty("db" + ProcessDescriptor.getInstance().localId);
+            String url = "jdbc:postgresql://" + configuration.getProperty("db." + ProcessDescriptor.getInstance().localId);
             String user = "postgres";
             String password = "password";
 
