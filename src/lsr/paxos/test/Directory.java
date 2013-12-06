@@ -78,7 +78,7 @@ public class Directory {
                             logger.info("Protocol says message has: " + readBuffer.getInt() + " bytes.");
                             readBuffer.rewind();
                             if (readBytes == readBuffer.getInt()) {
-                                readBuffer.rewind();
+                                //not rewinding buffer because message size needs to be discarded anyway
                                 break;
                             } else if (readBytes == 0) {
                                 logger.info("Not yet received message fully");
