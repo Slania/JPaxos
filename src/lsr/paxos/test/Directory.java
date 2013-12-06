@@ -60,11 +60,17 @@ public class Directory {
                 int objectIdLength = readBuffer.getInt();
                 int replicaSetLength = readBuffer.getInt();
 
+                logger.info(String.valueOf(objectIdLength));
+                logger.info(String.valueOf(replicaSetLength));
+
                 byte[] objectId = new byte[objectIdLength];
                 byte[] replicaSet = new byte[replicaSetLength];
 
                 readBuffer.get(objectId);
                 readBuffer.get(replicaSet);
+
+                logger.info(new String(objectId));
+                logger.info(new String(replicaSet));
 
                 objectReplicaSetMap.put(new String(objectId), new String(replicaSet));
 
