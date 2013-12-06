@@ -144,6 +144,18 @@ public class DirectoryProtocol {
                             buffer.put(newReplicaSet.getBytes());
                             buffer.flip();
 
+                            System.out.println("*********Buffer data*********");
+                            logger.info("Object id length: " + buffer.getInt());
+                            logger.info("New replica set length: " + buffer.getInt());
+                            byte[] debugObjId = new byte[objectId.getBytes().length];
+                            buffer.get(debugObjId);
+                            logger.info("Object id: " + new String(debugObjId));
+                            byte[] debugNewRepSet = new byte[newReplicaSet.getBytes().length];
+                            buffer.get(debugNewRepSet);
+                            logger.info("Object id: " + new String(debugNewRepSet));
+
+                            buffer.rewind();
+
                             directoryOutputStream.write(buffer.array());
                             directoryOutputStream.flush();
 
