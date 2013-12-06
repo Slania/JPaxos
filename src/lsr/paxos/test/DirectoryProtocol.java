@@ -138,10 +138,10 @@ public class DirectoryProtocol {
                             directoryInputStream = new DataInputStream(directory.getInputStream());
 
                             ByteBuffer buffer = ByteBuffer.allocate(4 + 4 + objectId.getBytes().length + newReplicaSet.getBytes().length);
-                            bb.putInt(objectId.getBytes().length);
-                            bb.putInt(newReplicaSet.getBytes().length);
-                            bb.put(objectId.getBytes());
-                            bb.put(newReplicaSet.getBytes());
+                            buffer.putInt(objectId.getBytes().length);
+                            buffer.putInt(newReplicaSet.getBytes().length);
+                            buffer.put(objectId.getBytes());
+                            buffer.put(newReplicaSet.getBytes());
                             buffer.flip();
 
                             directoryOutputStream.write(buffer.array());
