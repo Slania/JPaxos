@@ -48,7 +48,7 @@ public class Directory {
             selector = Selector.open();
 
             serverSocketChannel.register(selector, SelectionKey.OP_ACCEPT);
-            while (true) {
+            outerLoop: while (true) {
                 readBuffer.clear();
                 selector.select();
 
@@ -70,9 +70,20 @@ public class Directory {
                     }
 
                     if (key.isReadable()) {
-                        int readBytes = ((SocketChannel)key.channel()).read(readBuffer);
-
-                        logger.info("I read " + readBytes + " bytes.");
+                        int readBytes = 0;
+                        while (true) {
+                            readBytes += ((SocketChannel)key.channel()).read(readBuffer);
+                            readBuffer.flip();
+                            if (readBytes == readBuffer.getInt() + 4) {
+                                readBuffer.rewind();
+                                break;
+                            } else if (readBytes == 0) {
+                                logger.info("Not yet received message fully");
+                                continue outerLoop;
+                            } else {
+                                readBuffer.flip();
+                            }
+                        }
 
                         if (readBytes == 0) {
                             break;
@@ -108,9 +119,8 @@ public class Directory {
                         }
                         System.out.println("********-------------------------------********");
 
-                        byte[] ok = new byte[1];
-                        ok[0] = 1;
-                        ByteBuffer wrap = ByteBuffer.wrap(ok);
+                        ByteBuffer wrap = ByteBuffer.allocate(1);
+                        wrap.putInt(1);
                         wrap.flip();
                         ((SocketChannel)key.channel()).write(wrap);
                     }

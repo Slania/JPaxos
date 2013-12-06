@@ -137,7 +137,9 @@ public class DirectoryProtocol {
                             directoryOutputStream = new DataOutputStream(directory.getOutputStream());
                             directoryInputStream = new DataInputStream(directory.getInputStream());
 
-                            ByteBuffer buffer = ByteBuffer.allocate(4 + 4 + objectId.getBytes().length + newReplicaSet.getBytes().length);
+                            int messageSize = 4 + 4 + 4 + objectId.getBytes().length + newReplicaSet.getBytes().length;
+                            ByteBuffer buffer = ByteBuffer.allocate(messageSize);
+                            buffer.putInt(messageSize);
                             buffer.putInt(objectId.getBytes().length);
                             buffer.putInt(newReplicaSet.getBytes().length);
                             buffer.put(objectId.getBytes());
@@ -159,7 +161,7 @@ public class DirectoryProtocol {
                             directoryOutputStream.write(buffer.array());
                             directoryOutputStream.flush();
 
-                            byte ack = directoryInputStream.readByte();
+                            int ack = directoryInputStream.readInt();
 
                             if (ack == 1) {
                                 if (migrationAcks != null && migrationAcks.contains(",")) {
