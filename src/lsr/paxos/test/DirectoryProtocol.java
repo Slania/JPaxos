@@ -68,7 +68,6 @@ public class DirectoryProtocol {
         while (true) {
             try {
                 connection = DriverManager.getConnection(url, user, password);
-                preparedStatement = connection.prepareStatement(migrationsSql);
                 break;
             } catch (Exception e) {
                 e.printStackTrace();
@@ -79,7 +78,6 @@ public class DirectoryProtocol {
             rs1 = null;
             rs2 = null;
 
-
             leaderOutputStream.write(bb.array());
             leaderOutputStream.flush();
 
@@ -89,6 +87,7 @@ public class DirectoryProtocol {
                 isLeader = clientReply.getValue()[0] == 1;
                 logger.info("*******" + processes.get(localId).getHostname() + " is leader? " + isLeader);
                 try {
+                    preparedStatement = connection.prepareStatement(migrationsSql);
                     rs1 = preparedStatement.executeQuery();
                     while (rs1.next()) {
                         String objectId = rs1.getString(1);
