@@ -77,7 +77,7 @@ public class Directory {
                             readBuffer.flip();
                             logger.info("Protocol says message has: " + readBuffer.getInt() + " bytes.");
                             readBuffer.rewind();
-                            if (readBytes == readBuffer.getInt() + 4) {
+                            if (readBytes == readBuffer.getInt()) {
                                 readBuffer.rewind();
                                 break;
                             } else if (readBytes == 0) {

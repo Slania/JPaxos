@@ -137,6 +137,7 @@ public class DirectoryProtocol {
                             directoryOutputStream = new DataOutputStream(directory.getOutputStream());
                             directoryInputStream = new DataInputStream(directory.getInputStream());
 
+                            //messageSize + objectId.length + newReplicaSet.length + objectId + newReplicaSet
                             int messageSize = 4 + 4 + 4 + objectId.getBytes().length + newReplicaSet.getBytes().length;
                             ByteBuffer buffer = ByteBuffer.allocate(messageSize);
                             buffer.putInt(messageSize);
