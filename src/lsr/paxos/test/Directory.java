@@ -83,20 +83,23 @@ public class Directory {
                             } else if (readBytes == 0) {
                                 logger.info("Not yet received message fully");
                                 continue outerLoop;
+                            } else if (readBytes == -1) {
+                                ((SocketChannel)key.channel()).close();
+                                continue outerLoop;
                             } else {
                                 readBuffer.flip();
                             }
                         }
 
                         if (readBytes == 0) {
-                            break;
+                            continue outerLoop;
                         }
 
                         // EOF - that means that the other side close his socket, so we
                         // should close this connection too.
                         if (readBytes == -1) {
                             ((SocketChannel)key.channel()).close();
-                            return;
+                            continue outerLoop;
                         }
 
                         int objectIdLength = readBuffer.getInt();
