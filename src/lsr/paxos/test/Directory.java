@@ -73,7 +73,10 @@ public class Directory {
                         int readBytes = 0;
                         while (true) {
                             readBytes += ((SocketChannel)key.channel()).read(readBuffer);
+                            logger.info("I read more: " + readBytes + " bytes.");
                             readBuffer.flip();
+                            logger.info("Protocol says message has: " + readBuffer.getInt() + " bytes.");
+                            readBuffer.rewind();
                             if (readBytes == readBuffer.getInt() + 4) {
                                 readBuffer.rewind();
                                 break;
