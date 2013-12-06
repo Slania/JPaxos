@@ -122,7 +122,7 @@ public class Directory {
                         }
                         System.out.println("********-------------------------------********");
 
-                        ByteBuffer wrap = ByteBuffer.allocate(1);
+                        ByteBuffer wrap = ByteBuffer.allocate(4);
                         wrap.putInt(1);
                         wrap.flip();
                         ((SocketChannel)key.channel()).write(wrap);
