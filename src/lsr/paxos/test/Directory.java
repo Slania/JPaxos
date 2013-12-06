@@ -49,6 +49,7 @@ public class Directory {
 
             serverSocketChannel.register(selector, SelectionKey.OP_ACCEPT);
             while (true) {
+                readBuffer.clear();
                 selector.select();
 
                 for (Iterator<SelectionKey> i = selector.selectedKeys().iterator(); i.hasNext();) {
@@ -62,6 +63,7 @@ public class Directory {
 
                     if (key.isAcceptable()) {
                         SocketChannel client = serverSocketChannel.accept();
+                        logger.info("New connection from: " + client.socket());
                         client.configureBlocking(false);
                         client.socket().setTcpNoDelay(true);
                         client.register(selector, SelectionKey.OP_READ);
@@ -69,6 +71,8 @@ public class Directory {
 
                     if (key.isReadable()) {
                         int readBytes = ((SocketChannel)key.channel()).read(readBuffer);
+
+                        logger.info("I read " + readBytes + " bytes.");
 
                         if (readBytes == 0) {
                             break;
