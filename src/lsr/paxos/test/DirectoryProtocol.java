@@ -172,11 +172,13 @@ public class DirectoryProtocol {
                             int ack = directoryInputStream.readInt();
 
                             if (ack == 1) {
+                                logger.info("Migration Acks so far: " + migrationAcks);
                                 if (migrationAcks != null && migrationAcks.contains(",")) {
                                     migrationAcks += "," + directoryId;
                                 } else {
                                     migrationAcks  += directoryId;
                                 }
+                                logger.info("Migration Acks after update: " + migrationAcks);
                                 logger.info("*******Paxos updating directory ACK********");
                                 DirectoryServiceCommand updateCommand = new DirectoryServiceCommand(objectId, false, migrationAcks);
                                 byte[] response = client.execute(updateCommand.toByteArray());
