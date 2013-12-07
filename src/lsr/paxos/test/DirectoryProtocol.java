@@ -64,7 +64,7 @@ public class DirectoryProtocol {
         String user = "postgres";
         String password = "password";
         String migrationsSql = "SELECT object_id, old_replica_set, new_replica_set, migration_acks FROM migrations where migration_complete = 'false' limit 10";
-        String directoriesSql = "SELECT id, ip, port from directories where id not in (";
+        String directoriesSql;
         String emptyDirectoriesSql = "SELECT id, ip, port from directories";
 
         while (true) {
@@ -82,6 +82,7 @@ public class DirectoryProtocol {
         while (true) {
             rs1 = null;
             rs2 = null;
+            directoriesSql = "SELECT id, ip, port from directories where id not in (";
 
             leaderOutputStream.write(bb.array());
             leaderOutputStream.flush();
@@ -115,8 +116,13 @@ public class DirectoryProtocol {
 
                         if (migrationAcks != null) {
                             StringTokenizer stringTokenizer = new StringTokenizer(newReplicaSet, ",");
+                            boolean atLeastOneElement = false;
                             while (stringTokenizer.hasMoreElements()) {
+                                atLeastOneElement = true;
                                 directoriesSql += "?,";
+                            }
+                            if (atLeastOneElement) {
+                                directoriesSql = directoriesSql.substring(0, directoriesSql.length() - 1);
                             }
                             directoriesSql += ")";
                             preparedStatement = connection.prepareStatement(directoriesSql);
