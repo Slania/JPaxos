@@ -2,6 +2,7 @@ package lsr.paxos.test;
 
 import lsr.common.*;
 import lsr.paxos.ReplicationException;
+import lsr.paxos.client.Client;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -34,6 +35,7 @@ public class DirectoryProtocol {
     private DataInputStream leaderInputStream;
     private DataInputStream directoryInputStream;
     private boolean isLeader = false;
+    private Client client;
 
     public void start(int localId) throws IOException {
         FileInputStream fis = new FileInputStream("paxos.properties");
@@ -73,6 +75,9 @@ public class DirectoryProtocol {
                 e.printStackTrace();
             }
         }
+
+        client = new Client();
+        client.connect();
 
         while (true) {
             rs1 = null;
@@ -169,24 +174,29 @@ public class DirectoryProtocol {
                                 } else {
                                     migrationAcks  += directoryId;
                                 }
-                                String sql = "UPDATE migrations SET migration_acks = ? where object_id = ?";
-                                preparedStatement = connection.prepareStatement(sql);
-                                preparedStatement.setString(1, newReplicaSet);
-                                preparedStatement.setString(2, objectId);
-                                preparedStatement.executeUpdate();
+                                logger.info("*******Paxos updating directory ACK********");
+                                DirectoryServiceCommand updateCommand = new DirectoryServiceCommand(objectId, false, migrationAcks);
+                                byte[] response = client.execute(updateCommand.toByteArray());
+                                if (ByteBuffer.wrap(response).getInt() == 1) {
+                                    logger.info("*******Paxos updated*******");
+                                }
                             }
                         }
 
                         if (empty) {
-                            String sql = "UPDATE migrations SET migration_complete = 'TRUE' where object_id = ?";
-                            preparedStatement = connection.prepareStatement(sql);
-                            preparedStatement.setString(1, objectId);
-                            preparedStatement.executeUpdate();
+                            logger.info("*******Paxos updating migration to completed********");
+                            DirectoryServiceCommand updateCommand = new DirectoryServiceCommand(objectId, true, migrationAcks);
+                            byte[] response = client.execute(updateCommand.toByteArray());
+                            if (ByteBuffer.wrap(response).getInt() == 1) {
+                                logger.info("*******Paxos updated*******");
+                            }
                         }
                     }
                     rs1.close();
                     rs2.close();
                 } catch (SQLException e) {
+                    e.printStackTrace();
+                } catch (ReplicationException e) {
                     e.printStackTrace();
                 }
             }
