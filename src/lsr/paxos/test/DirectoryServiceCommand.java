@@ -36,11 +36,13 @@ public class DirectoryServiceCommand implements Serializable {
         this.objectId = objectId.getBytes();
         this.migrationComplete = migrationComplete;
         this.migrationAcks = migrationAcks.getBytes();
+        this.directoryCommandType = DirectoryCommandType.UPDATE;
     }
 
     //READ/DELETE
-    public DirectoryServiceCommand(String objectId) {
+    public DirectoryServiceCommand(String objectId, DirectoryCommandType directoryCommandType) {
         this.objectId = objectId.getBytes();
+        this.directoryCommandType = directoryCommandType;
     }
 
     //REGISTER
