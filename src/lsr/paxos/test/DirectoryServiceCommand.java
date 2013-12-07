@@ -219,7 +219,7 @@ public class DirectoryServiceCommand implements Serializable {
             }
             case UPDATE: {
                 //4 for the ordinal of the CommandType
-                int numOfBytes = 4 + objectId.length + migrationAcks.length + 1;
+                int numOfBytes = 4 + 4 + 4 + objectId.length + migrationAcks.length + 1;
                 ByteBuffer buffer = ByteBuffer.allocate(numOfBytes);
                 buffer.putInt(directoryCommandType.ordinal());
                 buffer.putInt(objectId.length);
@@ -231,7 +231,7 @@ public class DirectoryServiceCommand implements Serializable {
             }
             case READ: {
                 //4 for the ordinal of the CommandType
-                int numOfBytes = 4 + objectId.length;
+                int numOfBytes = 4 + 4 + objectId.length;
                 ByteBuffer buffer = ByteBuffer.allocate(numOfBytes);
                 buffer.putInt(directoryCommandType.ordinal());
                 buffer.putInt(objectId.length);
