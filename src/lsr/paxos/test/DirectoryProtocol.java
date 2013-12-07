@@ -131,7 +131,7 @@ public class DirectoryProtocol {
                             int index = 1;
                             stringTokenizer = new StringTokenizer(migrationAcks, ",");
                             while (stringTokenizer.hasMoreElements()) {
-                                preparedStatement.setInt(index, (Integer) stringTokenizer.nextElement());
+                                preparedStatement.setInt(index, Integer.valueOf((String) stringTokenizer.nextElement()));
                                 index++;
                             }
                             logger.info("Firing query: " + preparedStatement.toString());
