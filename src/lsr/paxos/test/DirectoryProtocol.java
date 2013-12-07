@@ -132,8 +132,10 @@ public class DirectoryProtocol {
                                 preparedStatement.setInt(index, (Integer) stringTokenizer.nextElement());
                                 index++;
                             }
+                            logger.info("Firing query: " + preparedStatement.toString());
                         } else {
                             preparedStatement = connection.prepareStatement(emptyDirectoriesSql);
+                            logger.info("Firing query: " + preparedStatement.toString());
                         }
                         rs2 = preparedStatement.executeQuery();
                         System.out.println("Yet to contact directories:");
