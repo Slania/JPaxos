@@ -105,6 +105,9 @@ public class DirectoryProtocol {
                         System.out.println(newReplicaSet);
                         System.out.print(".Progress: ");
                         String migrationAcks = rs1.getString(4);
+                        if (rs1.wasNull()) {
+                            migrationAcks = null;
+                        }
                         System.out.println(migrationAcks);
 
                         if (migrationAcks != null) {
