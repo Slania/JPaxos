@@ -179,7 +179,7 @@ public class DirectoryProtocol {
                                 if (migrationAcks != null && migrationAcks.contains(",")) {
                                     migrationAcks += "," + directoryId;
                                 } else {
-                                    migrationAcks  += directoryId;
+                                    migrationAcks = String.valueOf(directoryId);
                                 }
                                 logger.info("Migration Acks after update: " + migrationAcks);
                                 logger.info("*******Paxos updating directory ACK********");
