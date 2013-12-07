@@ -106,6 +106,9 @@ public class DirectoryProtocol {
                         System.out.print(".Progress: ");
                         String migrationAcks = rs1.getString(4);
                         if (rs1.wasNull()) {
+                            logger.info("JDBC not null actually works.");
+                        }
+                        if (rs1.wasNull() || "null".equals(migrationAcks)) {
                             migrationAcks = null;
                         }
                         System.out.println(migrationAcks);
