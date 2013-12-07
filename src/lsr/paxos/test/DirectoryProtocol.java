@@ -115,19 +115,21 @@ public class DirectoryProtocol {
                         System.out.println(migrationAcks);
 
                         if (migrationAcks != null) {
-                            StringTokenizer stringTokenizer = new StringTokenizer(newReplicaSet, ",");
+                            logger.info("There have been some ACKs");
+                            StringTokenizer stringTokenizer = new StringTokenizer(migrationAcks, ",");
                             boolean atLeastOneElement = false;
                             while (stringTokenizer.hasMoreElements()) {
+                                stringTokenizer.nextElement();
                                 atLeastOneElement = true;
                                 directoriesSql += "?,";
                             }
                             if (atLeastOneElement) {
                                 directoriesSql = directoriesSql.substring(0, directoriesSql.length() - 1);
+                                directoriesSql += ")";
                             }
-                            directoriesSql += ")";
                             preparedStatement = connection.prepareStatement(directoriesSql);
                             int index = 1;
-                            stringTokenizer = new StringTokenizer(newReplicaSet, ",");
+                            stringTokenizer = new StringTokenizer(migrationAcks, ",");
                             while (stringTokenizer.hasMoreElements()) {
                                 preparedStatement.setInt(index, (Integer) stringTokenizer.nextElement());
                                 index++;
