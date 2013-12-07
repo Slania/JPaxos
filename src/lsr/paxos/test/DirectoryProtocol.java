@@ -80,7 +80,6 @@ public class DirectoryProtocol {
         client.connect();
 
         while (true) {
-            rs1 = null;
             rs2 = null;
             directoriesSql = "SELECT id, ip, port from directories where id not in (";
 
@@ -210,8 +209,12 @@ public class DirectoryProtocol {
                             }
                         }
                     }
-                    rs1.close();
-                    rs2.close();
+                    if (rs1 != null) {
+                        rs1.close();
+                    }
+                    if (rs2 != null) {
+                        rs2.close();
+                    }
                 } catch (SQLException e) {
                     e.printStackTrace();
                 } catch (ReplicationException e) {
