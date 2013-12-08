@@ -74,6 +74,11 @@ public class Directory {
                         while (true) {
                             readBytes += ((SocketChannel)key.channel()).read(readBuffer);
                             logger.info("I read more: " + readBytes + " bytes.");
+                            if (readBytes == -1) {
+                                ((SocketChannel)key.channel()).close();
+                                key.cancel();
+                                continue outerLoop;
+                            }
                             readBuffer.flip();
                             logger.info("Protocol says message has: " + readBuffer.getInt() + " bytes.");
                             readBuffer.rewind();
@@ -92,13 +97,6 @@ public class Directory {
                         }
 
                         if (readBytes == 0) {
-                            continue outerLoop;
-                        }
-
-                        // EOF - that means that the other side close his socket, so we
-                        // should close this connection too.
-                        if (readBytes == -1) {
-                            ((SocketChannel)key.channel()).close();
                             continue outerLoop;
                         }
 
