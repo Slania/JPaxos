@@ -20,6 +20,7 @@ public class DirectoryService extends SimplifiedService {
     private final Properties configuration = new Properties();
 
     private HashMap<DirectoryServiceCommand, Boolean> map = new HashMap<DirectoryServiceCommand, Boolean>();
+    private static final int BATCH_EXECUTE_SIZE = 100;
 
     protected byte[] execute(byte[] value, boolean isLeader) {
         FileInputStream fis = null;
@@ -200,8 +201,8 @@ public class DirectoryService extends SimplifiedService {
     protected byte[] makeSnapshot() {
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
         try {
-            ObjectOutputStream objectOutputStream = new ObjectOutputStream(stream);
-            objectOutputStream.writeObject(map);
+            DataOutputStream dataOutputStream = new DataOutputStream(stream);
+            dataOutputStream.write(ProcessDescriptor.getInstance().localId);
         } catch (IOException e) {
             e.printStackTrace();
             return null;
@@ -212,14 +213,129 @@ public class DirectoryService extends SimplifiedService {
     @SuppressWarnings("unchecked")
     protected void updateToSnapshot(byte[] snapshot) {
         ByteArrayInputStream stream = new ByteArrayInputStream(snapshot);
-        ObjectInputStream objectInputStream;
+        DataInputStream dataInputStream;
         try {
-            objectInputStream = new ObjectInputStream(stream);
-            map = (HashMap<DirectoryServiceCommand, Boolean>) objectInputStream.readObject();
+            dataInputStream = new DataInputStream(stream);
+            int masterDB = dataInputStream.readInt();
+            restoreFromMaster(masterDB);
         } catch (IOException e) {
             e.printStackTrace();
-        } catch (ClassNotFoundException e) {
+        }
+    }
+
+    private void restoreFromMaster(int masterDB) {
+        Connection sourceConnection = null;
+        Connection destinationConnection = null;
+
+        PreparedStatement selectStatement = null;
+        PreparedStatement insertStatement = null;
+
+        ResultSet resultSet = null;
+
+        try
+        {
+            String destUrl = "jdbc:postgresql://" + configuration.getProperty("db." + ProcessDescriptor.getInstance().localId);
+            String sourceUrl = "jdbc:postgresql://" + configuration.getProperty("db." + masterDB);
+            String user = "postgres";
+            String password = "password";
+
+            sourceConnection = DriverManager.getConnection(sourceUrl, user, password);
+            destinationConnection = DriverManager.getConnection(destUrl, user, password);
+
+            String tableName = "migrations";
+
+            selectStatement = sourceConnection.prepareStatement("SELECT * FROM " + tableName);
+            resultSet = selectStatement.executeQuery();
+
+            insertStatement = destinationConnection.prepareStatement(createInsertSql(resultSet.getMetaData()));
+
+            int batchSize = 0;
+            while (resultSet.next())
+            {
+                setParameters(insertStatement, resultSet);
+                insertStatement.addBatch();
+                batchSize++;
+
+                if (batchSize >= BATCH_EXECUTE_SIZE)
+                {
+                    insertStatement.executeBatch();
+                    batchSize = 0;
+                }
+            }
+
+            insertStatement.executeBatch();
+
+            tableName = "directories";
+
+            selectStatement = sourceConnection.prepareStatement("SELECT * FROM " + tableName);
+            resultSet = selectStatement.executeQuery();
+
+            insertStatement = destinationConnection.prepareStatement(createInsertSql(resultSet.getMetaData()));
+
+            batchSize = 0;
+            while (resultSet.next())
+            {
+                setParameters(insertStatement, resultSet);
+                insertStatement.addBatch();
+                batchSize++;
+
+                if (batchSize >= BATCH_EXECUTE_SIZE)
+                {
+                    insertStatement.executeBatch();
+                    batchSize = 0;
+                }
+            }
+
+            insertStatement.executeBatch();
+
+        } catch (SQLException e) {
             e.printStackTrace();
+        } finally
+        {
+            try {
+                resultSet.close();
+                insertStatement.close();
+                selectStatement.close();
+                sourceConnection.close();
+                destinationConnection.close();
+            } catch (SQLException e) {
+
+            }
+        }
+    }
+
+    private String createInsertSql(ResultSetMetaData resultSetMetaData) throws SQLException
+    {
+        StringBuffer insertSql = new StringBuffer("INSERT INTO ");
+        StringBuffer values = new StringBuffer(" VALUES (");
+
+        insertSql.append(resultSetMetaData.getTableName(1));
+
+        for (int i = 1; i <= resultSetMetaData.getColumnCount(); i++)
+        {
+            insertSql.append(resultSetMetaData.getColumnName(i));
+            values.append("?");
+
+            if (i <= resultSetMetaData.getColumnCount())
+            {
+                insertSql.append(", ");
+                values.append(", ");
+            }
+            else
+            {
+                insertSql.append(")");
+                values.append(")");
+            }
+        }
+
+        return insertSql.toString() + values.toString();
+    }
+
+    private void setParameters(PreparedStatement preparedStatement, ResultSet resultSet) throws SQLException
+    {
+        for (int i = 1; i <= resultSet.getMetaData().getColumnCount(); i++)
+        {
+            preparedStatement.setObject(i, resultSet.getObject(i));
         }
     }
 
