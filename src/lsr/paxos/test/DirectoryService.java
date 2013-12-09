@@ -229,6 +229,7 @@ public class DirectoryService extends SimplifiedService {
 
         PreparedStatement selectStatement = null;
         PreparedStatement insertStatement = null;
+        PreparedStatement deleteStatement = null;
 
         ResultSet resultSet = null;
 
@@ -245,9 +246,12 @@ public class DirectoryService extends SimplifiedService {
             String tableName = "migrations";
 
             selectStatement = sourceConnection.prepareStatement("SELECT * FROM " + tableName);
+            deleteStatement = sourceConnection.prepareStatement("DELETE FROM" + tableName);
             resultSet = selectStatement.executeQuery();
 
             insertStatement = destinationConnection.prepareStatement(createInsertSql(resultSet.getMetaData()));
+
+            deleteStatement.execute();
 
             int batchSize = 0;
             while (resultSet.next())
@@ -268,9 +272,12 @@ public class DirectoryService extends SimplifiedService {
             tableName = "directories";
 
             selectStatement = sourceConnection.prepareStatement("SELECT * FROM " + tableName);
+            deleteStatement = sourceConnection.prepareStatement("DELETE FROM" + tableName);
             resultSet = selectStatement.executeQuery();
 
             insertStatement = destinationConnection.prepareStatement(createInsertSql(resultSet.getMetaData()));
+
+            deleteStatement.execute();
 
             batchSize = 0;
             while (resultSet.next())
