@@ -67,6 +67,10 @@ public class TcpNetwork extends Network implements Runnable {
      * @return true if message was sent; false if some error occurred
      */
     public boolean send(byte[] message, int destination) {
+        if (!started){
+            start();
+        }
+
         assert destination != p.localId;
         return connections[destination].send(message);
     }

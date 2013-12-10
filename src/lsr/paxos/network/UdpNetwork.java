@@ -114,6 +114,10 @@ public class UdpNetwork extends Network {
      * @throws IOException if an I/O error occurs
      */
     void send(byte[] message, BitSet destinations) {
+        if (!started) {
+            start();
+        }
+
         // prepare packet to send
         byte[] data = new byte[message.length + 4];
         ByteBuffer.wrap(data).putInt(p.localId).put(message);
